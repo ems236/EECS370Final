@@ -26,6 +26,7 @@ import android.text.TextPaint;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
@@ -34,37 +35,22 @@ import android.widget.RelativeLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.util.Log;
+import android.widget.ToggleButton;
 
-public class MainActivity extends AppCompatActivity  {
+public class MainActivity extends AppCompatActivity {
 
 
+    //private TextView mTextMessage;
+    private TextView deviceIdTextView;
+    private TextView messageTextView;
 
-    private TextView mTextMessage;
+    private ToggleButton onOffToggle;
 
-    private BottomNavigationView.OnNavigationItemSelectedListener mOnNavigationItemSelectedListener
-            = new BottomNavigationView.OnNavigationItemSelectedListener() {
+    private SeekBar seekBarHue;
+    private SeekBar seekBarSat;
+    private SeekBar seekBarVal;
 
-        @Override
-        public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-
-//            Log.d("hitnav", "Navigation item selected()");
-//
-//            switch (item.getItemId()) {
-//                case R.id.navigation_home:
-//                    mTextMessage.setText(R.string.title_home);
-//                    return true;
-//                case R.id.navigation_dashboard:
-//                    mTextMessage.setText(R.string.title_dashboard);
-//                    //mTextMessage.setText("Welf Saupe");
-//                    return true;
-//                case R.id.navigation_notifications:
-//                    mTextMessage.setText(R.string.title_notifications);
-//                    return true;
-//            }
-            return false;
-        }
-    };
-
+    private LinearLayout colorBar;
     protected Drawable getSliderShape(float width, int[] colors ) {
         LinearGradient test;
         test = new LinearGradient(0.f, 0.f, width, 0.0f, colors,
@@ -111,52 +97,16 @@ public class MainActivity extends AppCompatActivity  {
         //return th;
     }
 
-//    @Override
-//    protected void onResume() {
-//        super.onResume();
-//        Log.d("hello", "In the onStart() event");
-//        SeekBar seekBarHue = (SeekBar)findViewById(R.id.seekbarHue);
-//        int i = seekBarHue.getWidth();
-//        i = seekBarHue.getMeasuredWidth();
-//        android.graphics.Rect r;
-//        r = seekBarHue.getProgressDrawable().getBounds();
-//        int width  =  seekBarHue.getLayoutParams().width;
-//        seekBarHue.setLayoutParams(new LayoutParams(1000, 200));
-//        width  =  seekBarHue.getLayoutParams().width;
-//        //seekBarHue.setThumb(getSliderThumb(Color.YELLOW, 150));
-//        int height = this.getWindow().getDecorView().getHeight();
-//        width = this.getWindow().getDecorView().getWidth();
-//
-//    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        deviceIdTextView = (TextView) findViewById(R.id.deviceId);
+        messageTextView = (TextView) findViewById(R.id.message);
 
-        Button onOffButton = findViewById(R.id.buttonOnOff);
-        onOffButton.setBackgroundColor(Color.DKGRAY  );
-        onOffButton.setTextColor(Color.LTGRAY);
-        onOffButton.setHighlightColor(Color.LTGRAY);
-        onOffButton.setLinkTextColor(Color.LTGRAY);
-        //onOffButton.setCompoundDrawableTintList(ColorStateList.valueOf(Color.parseColor("#ff9708")));
-
-
-        //Drawable drawable = getResources().getDrawable(R.drawable.ic_lock_power_off.).mutate();
-
-//        Drawable[] drawables = onOffButton.getCompoundDrawables();
-        //drawable.setColorFilter(getResources().getColor(R.color.colorPrimary), PorterDuff.Mode.SRC_ATOP);
-
-        //yourButton.setCompoundDrawables(null, drawable, null, null);
-//        drawables[0].setColorFilter(Color.YELLOW, PorterDuff.Mode.SRC_ATOP);
-
-
-
-        mTextMessage = (TextView) findViewById(R.id.message);
-        mTextMessage.setText("Connection Type: Not Connected");
-        BottomNavigationView navigation = (BottomNavigationView) findViewById(R.id.navigation);
-        navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener);
+        messageTextView.setText("Connection Type: Not Connected");
 
         // Click this button to pass data to target activity and
         // then wait for target activity to return result data back.
@@ -166,20 +116,18 @@ public class MainActivity extends AppCompatActivity  {
             public void onClick(View view) {
                 Intent intent = new Intent(MainActivity.this, DisplayMessageActivity.class);
                 intent.putExtra("message", "This message comes from PassingDataSourceActivity's second button");
-                mTextMessage = (TextView) findViewById(R.id.message);
-                intent.putExtra(CONNECTION_TYPE, mTextMessage.getText().toString());
-                mTextMessage = (TextView) findViewById(R.id.deviceId);
-                intent.putExtra("DeviceId", mTextMessage.getText().toString());
-                //mTextMessage = (TextView) findViewById(R.id.message);
+                intent.putExtra(CONNECTION_TYPE, messageTextView.getText().toString());
+                intent.putExtra("DeviceId", deviceIdTextView.getText().toString());
 
                 startActivityForResult(intent, REQUEST_CODE_1);
             }
         });
 
-        final SeekBar seekBarHue = (SeekBar)findViewById(R.id.seekbarHue);
-        final SeekBar seekBarSat = (SeekBar)findViewById(R.id.seekbarSat);
-        final SeekBar seekBarVal = (SeekBar)findViewById(R.id.seekbarVal);
-        //int  x1 = seekBarHue.getMeasuredWidth(); //returns 0
+        seekBarHue = (SeekBar)findViewById(R.id.seekbarHue);
+        seekBarSat = (SeekBar)findViewById(R.id.seekbarSat);
+        seekBarVal = (SeekBar)findViewById(R.id.seekbarVal);
+
+        colorBar = (LinearLayout)findViewById(R.id.colorbarcontainer);
         //do all three bars at once they are all the same with
         seekBarSat.post(new Runnable() {
             @Override
@@ -188,16 +136,11 @@ public class MainActivity extends AppCompatActivity  {
                 int[] hueColors = new int[] { 0xFFFF0000, 0xFFFFFF00, 0xFF00FF00, 0xFF00FFFF,
                         0xFF0000FF, 0xFFFF00FF, 0xFFFF0000};
                 seekBarHue.setProgressDrawable(getSliderShape(width, hueColors));
-//                seekBarHue.setThumb(getSliderThumb(Color.GREEN, 100));
                 seekBarVal.setProgressDrawable(getSliderShape(width, new int[] { 0xFF000000, 0xFFFFFFFF}));
-//                seekBarVal.setThumb(getSliderThumb(Color.BLUE, 100));
+
+                // update the display
                 seekBarChange();
                 return;
-//
-//                seekBarSat.setProgressDrawable(getSliderShape(width, new int[] { 0xFFFFFFFF, 0xFFFFFF00}));
-//                seekBarSat.setThumb(getSliderThumb(Color.RED, 100));
-//
-//
             }
         });
 
@@ -239,6 +182,18 @@ public class MainActivity extends AppCompatActivity  {
             }
         });
 
+        onOffToggle = (ToggleButton)findViewById(R.id.toggleOnOff);
+        onOffToggle.setOnCheckedChangeListener(new ToggleButton.OnCheckedChangeListener() {
+            public void onCheckedChanged(CompoundButton compoundButton, boolean b)
+            {
+                if(b) {
+                    Log.d ("togglebutton", "checked");
+                    onOffToggle.setTextColor(Color.YELLOW);
+
+                }
+                seekBarChange();
+            }
+        });
 
     }
 
@@ -247,17 +202,13 @@ public class MainActivity extends AppCompatActivity  {
 
     public void seekBarChange()
     {
-        final SeekBar seekBarHue = (SeekBar)findViewById(R.id.seekbarHue);
-        final SeekBar seekBarSat = (SeekBar)findViewById(R.id.seekbarSat);
-        final SeekBar seekBarVal = (SeekBar)findViewById(R.id.seekbarVal);
-        Log.d("hello", "got here");
+        boolean isOn = onOffToggle.isChecked();
+
         int width = seekBarSat.getWidth(); //height is ready
         int hue = seekBarHue.getProgress();
         int sat = seekBarSat.getProgress();
         int val = seekBarVal.getProgress();
-        Log.d("hue", "hue" + hue);
-        Log.d("sat", "sat" + sat);
-        Log.d("val", "val" + val);
+
         int fullcolor = Color.HSVToColor(new float[] {hue * 3.6f, 1.0f, 1.0f} );
         int satcolor = Color.HSVToColor(new float[] {hue * 3.6f, sat / 100f, 1.0f} );
         int gsColor = (255 * val) / 100;
@@ -265,28 +216,22 @@ public class MainActivity extends AppCompatActivity  {
 
         seekBarHue.setThumb(getSliderThumb(fullcolor, 100));
 
-        seekBarSat.setThumb(getSliderThumb(fullcolor, 50));
+        seekBarSat.setThumb(getSliderThumb(fullcolor, 50)); //prevents horizontal bar from getting really tall
         seekBarSat.setProgressDrawable(getSliderShape(width, new int[] { 0xFFFFFFFF, fullcolor}));
         seekBarSat.setThumb(getSliderThumb(satcolor, 100));
 
         seekBarVal.setThumb(getSliderThumb(valcolor, 100));
 
-        LinearLayout colorBar = (LinearLayout) findViewById(R.id.colorbarcontainer);
         colorBar.setBackgroundColor(satcolor);
 
+        if (isOn) {
+            onOffToggle.setTextColor(fullcolor);
+            //onOffToggle.setHighlightColor(fullcolor);
+        } else {
+            onOffToggle.setTextColor(Color.BLACK);
+        }
     }
-//    /** Called when the user taps the Send button */
-//    public void sendMessage(View view) {
-//        Log.d("hitsend", "sendMessage()");
-//        Intent intent = new Intent(this, DisplayMessageActivity.class);
-//        EditText editText = (EditText) findViewById(R.id.editText);
-//        String message = editText.getText().toString();
-//        intent.putExtra(EXTRA_MESSAGE, message);
-//        mTextMessage = (TextView) findViewById(R.id.message);
-//        mTextMessage.setText("Connection Type: Not Connected");
-//        intent.putExtra(CONNECTION_TYPE, mTextMessage.getText().toString());
-//        startActivity(intent);
-//    }
+
     private final static int REQUEST_CODE_1 = 1;
     // This method is invoked when target activity return result data back.
     @Override
@@ -299,19 +244,13 @@ public class MainActivity extends AppCompatActivity  {
         {
             // This request code is set by startActivityForResult(intent, REQUEST_CODE_1) method.
             case REQUEST_CODE_1:
-                //TextView textView = (TextView)findViewById(R.id.textView);
                 if(resultCode == RESULT_OK)
                 {
                     String deviceId = dataIntent.getStringExtra("deviceId");
                     String connectionType = dataIntent.getStringExtra("connectionType");
                     String messageReturn = dataIntent.getStringExtra("message_return");
-                    mTextMessage = (TextView) findViewById(R.id.deviceId);
-                    mTextMessage.setText(deviceId);
-
-                    mTextMessage = (TextView) findViewById(R.id.message);
-                    mTextMessage.setText(connectionType);
-                    //mTextMessage = (TextView) findViewById(R.id.message);
-                    //textView.setText(messageReturn);
+                    deviceIdTextView.setText(deviceId);
+                    messageTextView.setText(connectionType);
                 }
         }
     }

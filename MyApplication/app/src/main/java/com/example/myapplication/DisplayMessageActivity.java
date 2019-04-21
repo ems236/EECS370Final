@@ -3,6 +3,8 @@ package com.example.myapplication;
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.view.menu.ActionMenuItem;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -14,6 +16,10 @@ public class DisplayMessageActivity extends AppCompatActivity {
     private  String CONNECTION_TYPE = "";
     private  String DEVICE_ID = "";
 
+    private TextView textViewMessage;
+    private EditText editNetworkDeviceIdEditText;
+
+    Spinner blueToothDeviceSpinner;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -30,20 +36,14 @@ public class DisplayMessageActivity extends AppCompatActivity {
         DEVICE_ID =  deviceId;
 
         // Capture the layout's TextView and set the string as its text
-        TextView textView = findViewById(R.id.textView);
-        textView.setText(message);
-/*
-        Spinner spinner = findViewById(R.id.spinner);
-        // Create an ArrayAdapter using the string array and a default spinner layout
-        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,
-                R.array.planets_array, android.R.layout.simple_spinner_item);
-// Specify the layout to use when the list of choices appears
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        adapter.add("Pluto");
-        adapter.add("Mickey Mouse");
-        adapter.add("Huey");
-        adapter.add("Dewey");
-        */
+        textViewMessage = findViewById(R.id.textView);
+        textViewMessage.setText(message);
+
+//        TextView t = findViewById(R.id.text);
+        textViewMessage.setText("Select a LAMPI using either the bluetooth device dropdown list or the network device edit box.\nThen click the appropriate button to select.");
+
+
+
 // Array of choices
         String colors[] = {"Red","Blue","White","Yellow","Black", "Green","Purple","Orange","Grey",
                 "Afghanistan", "Albania", "Algeria", "American Samoa", "Andorra", "Angola", "Anguilla",
@@ -82,14 +82,21 @@ public class DisplayMessageActivity extends AppCompatActivity {
         };
 
 // Selection of the spinner
-        Spinner spinner = (Spinner) findViewById(R.id.spinner);
+        blueToothDeviceSpinner = (Spinner) findViewById(R.id.spinner);
 
 // Application of the Array to the Spinner
         ArrayAdapter<String> spinnerArrayAdapter = new ArrayAdapter<String>(this,   android.R.layout.simple_spinner_item, colors);
         spinnerArrayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item); // The drop down view
-        spinner.setAdapter(spinnerArrayAdapter);
+        blueToothDeviceSpinner.setAdapter(spinnerArrayAdapter);
         // Apply the adapter to the spinner
-        //spinner.setAdapter(adapter);
+
+        editNetworkDeviceIdEditText = (EditText) findViewById(R.id.editNetworkDeviceId);
+        editNetworkDeviceIdEditText.setText("Enter Device Id");
+        if (connectionType.equals("Network")) {
+            editNetworkDeviceIdEditText.setText(deviceId);
+        } else if (connectionType.equals("BlueTooth")){
+            blueToothDeviceSpinner.setSelection(spinnerArrayAdapter.getPosition(deviceId));
+        }
 
         // Click this button to send response result data to source activity.
         Button passDataTargetReturnDataButton = (Button)findViewById(R.id.buttonSelect);
@@ -97,9 +104,9 @@ public class DisplayMessageActivity extends AppCompatActivity {
             //@Override
             public void onClick(View view) {
                 Intent intent = new Intent();
-                Spinner spinner = (Spinner) findViewById(R.id.spinner);
+                //Spinner spinner = (Spinner) findViewById(R.id.spinner);
 
-                intent.putExtra("deviceId", spinner.getSelectedItem().toString());
+                intent.putExtra("deviceId", blueToothDeviceSpinner.getSelectedItem().toString());
                 intent.putExtra("connectionType", "BlueTooth");
                 setResult(RESULT_OK, intent);
                 finish();
@@ -107,14 +114,14 @@ public class DisplayMessageActivity extends AppCompatActivity {
         });
 
         // Click this button to send response result data to source activity.
-        passDataTargetReturnDataButton = (Button)findViewById(R.id.buttonNetworkId);
-        passDataTargetReturnDataButton.setOnClickListener(new View.OnClickListener() {
+        Button networkIdButton = (Button)findViewById(R.id.buttonNetworkId);
+        networkIdButton.setOnClickListener(new View.OnClickListener() {
             //@Override
             public void onClick(View view) {
                 Intent intent = new Intent();
-                EditText editText = (EditText) findViewById(R.id.editNetworkDeviceId);
+                //EditText editText = (EditText) findViewById(R.id.editNetworkDeviceId);
 
-                intent.putExtra("deviceId", editText.getText().toString());
+                intent.putExtra("deviceId", editNetworkDeviceIdEditText.getText().toString());
                 intent.putExtra("connectionType", "Network");
                 setResult(RESULT_OK, intent);
                 finish();
@@ -123,8 +130,6 @@ public class DisplayMessageActivity extends AppCompatActivity {
 
 
     }
-
-
 
 
     // This method will be invoked when user click android device Back menu at bottom.
@@ -138,5 +143,20 @@ public class DisplayMessageActivity extends AppCompatActivity {
         finish();
     }
 
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
 
+        if (item  instanceof ActionMenuItem) // this is a hack to make the back button send values back
+        {
+            onBackPressed();
+            return true;
+        }
+        switch (item.getItemId()) {
+            case R.id.home: //this logic did not work
+                onBackPressed();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
 }
