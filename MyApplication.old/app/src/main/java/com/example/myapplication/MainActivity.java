@@ -43,7 +43,6 @@ public class MainActivity extends AppCompatActivity {
     //private TextView mTextMessage;
     private TextView deviceIdTextView;
     private TextView messageTextView;
-    private TextView noDeviceTextView;
 
     private ToggleButton onOffToggle;
 
@@ -106,7 +105,6 @@ public class MainActivity extends AppCompatActivity {
 
         deviceIdTextView = (TextView) findViewById(R.id.deviceId);
         messageTextView = (TextView) findViewById(R.id.message);
-        noDeviceTextView = (TextView) findViewById(R.id.nodevicetext);
 
         messageTextView.setText("Connection Type: Not Connected");
 
@@ -142,11 +140,10 @@ public class MainActivity extends AppCompatActivity {
 
                 // update the display
                 seekBarChange();
-                setDeviceStatus(!deviceIdTextView.getText().equals("Not Connected"));
-
                 return;
             }
         });
+
 
         seekBarHue.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
@@ -187,50 +184,18 @@ public class MainActivity extends AppCompatActivity {
 
         onOffToggle = (ToggleButton)findViewById(R.id.toggleOnOff);
         onOffToggle.setOnCheckedChangeListener(new ToggleButton.OnCheckedChangeListener() {
-
-
             public void onCheckedChanged(CompoundButton compoundButton, boolean b)
             {
                 if(b) {
                     Log.d ("togglebutton", "checked");
                     onOffToggle.setTextColor(Color.YELLOW);
+
                 }
                 seekBarChange();
             }
         });
-setLampValues(0.5, 1.0, 0.7, false);
 
     }
-
-    // Show / hide lamp controls
-    public void setDeviceStatus(boolean isActive)
-    {
-        if (isActive){
-            seekBarHue.setVisibility(View.VISIBLE);
-            seekBarVal.setVisibility(View.VISIBLE);
-            seekBarSat.setVisibility(View.VISIBLE);
-            colorBar.setVisibility(View.VISIBLE);
-            onOffToggle.setVisibility(View.VISIBLE);
-            noDeviceTextView.setVisibility(View.GONE);
-        } else {
-            seekBarHue.setVisibility(View.GONE);
-            seekBarVal.setVisibility(View.GONE);
-            seekBarSat.setVisibility(View.GONE);
-            colorBar.setVisibility(View.GONE);
-            onOffToggle.setVisibility(View.GONE);
-            noDeviceTextView.setVisibility(View.VISIBLE);
-        }
-    }
-
-    // Update the lamp display (sliders and button)
-    public void setLampValues(Double hue, Double sat, Double val, Boolean isOn)
-    {
-        if (hue != null) { seekBarHue.setProgress((int) Math.round(hue*100.0)); }
-        if (sat != null) { seekBarSat.setProgress((int) Math.round(sat*100.0)); }
-        if (val != null) { seekBarVal.setProgress((int) Math.round(val*100.0)); }
-        if (isOn != null) { onOffToggle.setChecked(isOn); };
-    }
-
 
     public static final String EXTRA_MESSAGE = "com.example.myfirstapp.MESSAGE";
     public static final String CONNECTION_TYPE = "";
@@ -265,12 +230,7 @@ setLampValues(0.5, 1.0, 0.7, false);
         } else {
             onOffToggle.setTextColor(Color.BLACK);
         }
-
-//        setDeviceStatus(!deviceIdTextView.getText().equals("Not Connected"));
-
     }
-
-
 
     private final static int REQUEST_CODE_1 = 1;
     // This method is invoked when target activity return result data back.
@@ -291,7 +251,6 @@ setLampValues(0.5, 1.0, 0.7, false);
                     String messageReturn = dataIntent.getStringExtra("message_return");
                     deviceIdTextView.setText(deviceId);
                     messageTextView.setText(connectionType);
-                    setDeviceStatus(!deviceId.equals("Not Connected"));
                 }
         }
     }

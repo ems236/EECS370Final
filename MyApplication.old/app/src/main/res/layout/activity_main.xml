@@ -19,10 +19,6 @@
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-
-
-
-
     <android.support.design.widget.BottomNavigationView
         android:id="@+id/navigation"
         android:layout_width="0dp"
@@ -202,20 +198,8 @@
             android:drawableTop="@android:drawable/ic_lock_power_off"
  />
 
-        <TextView
-            android:id="@+id/nodevicetext"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="10dp"
-            android:text="No Connected Device"
-            android:textSize="24dp"
-            android:visibility="gone"
-            />
 
     </LinearLayout>
-
-
-
 
 </android.support.constraint.ConstraintLayout>
 
