@@ -29,12 +29,13 @@ public class BLEDriver
     private BluetoothDevice currentDevice = null;
 
     private List<BluetoothDevice> devices = new ArrayList<BluetoothDevice>();
+
     public List<String> deviceNames()
     {
         List<String> names = new ArrayList<String>();
         for(BluetoothDevice device : devices)
         {
-            names.add(device.getName());
+            names.add(device.getName() + " (" + device.getAddress() + ")");
         }
         return names;
     }
@@ -85,6 +86,18 @@ public class BLEDriver
         return null;
     }
 
+    private boolean isDeviceNew(String mac)
+    {
+        for(BluetoothDevice device : devices)
+        {
+            if(device.getAddress().equals(mac))
+            {
+                return false;
+            }
+        }
+        return true;
+    }
+
     class BrowserStartCallBack extends ScanCallback
     {
         LampDiscoveryDelegate delegate;
@@ -98,8 +111,11 @@ public class BLEDriver
         {
             BluetoothDevice discovered = result.getDevice();
             Log.d("BLEDriver","Found Device");
-            if (discovered != null) {
+            //result.
+            if (discovered != null && isDeviceNew(discovered.getAddress()))
+            {
                 devices.add(discovered);
+                //discovered.
                 if (discovered.getName() != null)
                 {
                     delegate.discoveredLamp(discovered.getName());
