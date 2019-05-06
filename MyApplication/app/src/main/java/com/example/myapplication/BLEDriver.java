@@ -10,6 +10,8 @@ import android.bluetooth.*;
 import android.bluetooth.le.ScanSettings;
 import android.os.ParcelUuid;
 
+import android.util.Log;
+
 public class BLEDriver
 {
     public static BLEDriver instance = new BLEDriver();
@@ -21,12 +23,13 @@ public class BLEDriver
     private final String hsvUUID = "0002A7D3-D8A4-4FEA-8174-1736E808C066";
     private final String brightnessUUID = "0003A7D3-D8A4-4FEA-8174-1736E808C066";
 
+    private BluetoothDevice currentDevice = null;
 
-    private List<BluetoothDevice> services = new ArrayList<BluetoothDevice>();
+    private List<BluetoothDevice> devices = new ArrayList<BluetoothDevice>();
     public List<String> deviceNames()
     {
         List<String> names = new ArrayList<String>();
-        for(BluetoothDevice device : services)
+        for(BluetoothDevice device : devices)
         {
             names.add(device.getName());
         }
@@ -39,7 +42,7 @@ public class BLEDriver
 
     public void startBrowsing()
     {
-        services = new ArrayList<BluetoothDevice>();
+        devices = new ArrayList<BluetoothDevice>();
         ParcelUuid serviceId = new ParcelUuid(UUID.fromString(serviceUUID));
         ScanFilter serviceFilter = new ScanFilter.Builder().setServiceUuid(serviceId).build();
         List<ScanFilter> filters = new ArrayList<ScanFilter>();
@@ -47,10 +50,11 @@ public class BLEDriver
         scanner.startScan(filters, new ScanSettings.Builder().build(), new BrowserStartCallBack());
     }
 
-    public void connect(String deviceName)
+    public void connect(String deviceName, Context context)
     {
-        BluetoothDevice device = matchDeviceStringName(deviceName);
         stopBrowsing();
+        BluetoothDevice device = matchDeviceStringName(deviceName);
+        device.connectGatt(context, true, new LampiCallBack());
     }
 
     public void stopBrowsing()
@@ -60,7 +64,7 @@ public class BLEDriver
 
     private BluetoothDevice matchDeviceStringName(String name)
     {
-        for(BluetoothDevice device : services)
+        for(BluetoothDevice device : devices)
         {
             if(device.getName().equals(name))
             {
@@ -78,12 +82,17 @@ public class BLEDriver
             BluetoothDevice discovered = result.getDevice();
             if (discovered != null)
             {
-                services.add(discovered);
+                devices.add(discovered);
             }
         }
     }
     class BrowserStopCallBack extends ScanCallback
     {
+    }
+
+    class LampiCallBack extends BluetoothGattCallback
+    {
+
     }
 
 }
