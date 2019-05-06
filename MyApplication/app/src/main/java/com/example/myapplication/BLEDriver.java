@@ -40,26 +40,27 @@ public class BLEDriver
     {
     }
 
-    public void startBrowsing()
+    public void startBrowsing(LampDiscoveryDelegate delegate)
     {
         devices = new ArrayList<BluetoothDevice>();
         ParcelUuid serviceId = new ParcelUuid(UUID.fromString(serviceUUID));
         ScanFilter serviceFilter = new ScanFilter.Builder().setServiceUuid(serviceId).build();
         List<ScanFilter> filters = new ArrayList<ScanFilter>();
         filters.add(serviceFilter);
-        scanner.startScan(filters, new ScanSettings.Builder().build(), new BrowserStartCallBack());
+        scanner.startScan(filters, new ScanSettings.Builder().build(), new BrowserStartCallBack(delegate));
+    }
+
+    public void stopBrowsing()
+    {
+        scanner.stopScan(new BrowserStopCallBack());
     }
 
     public void connect(String deviceName, Context context)
     {
         stopBrowsing();
         BluetoothDevice device = matchDeviceStringName(deviceName);
-        device.connectGatt(context, true, new LampiCallBack());
-    }
-
-    public void stopBrowsing()
-    {
-        scanner.stopScan(new BrowserStopCallBack());
+        BluetoothGatt gatt = device.connectGatt(context, true, new LampiCallBack());
+        //gatt.
     }
 
     private BluetoothDevice matchDeviceStringName(String name)
@@ -76,6 +77,11 @@ public class BLEDriver
 
     class BrowserStartCallBack extends ScanCallback
     {
+        LampDiscoveryDelegate delegate;
+        public BrowserStartCallBack(LampDiscoveryDelegate delegate)
+        {
+            this.delegate = delegate;
+        }
         public void onScanResult (int callbackType,
                                   ScanResult result)
         {
@@ -83,6 +89,7 @@ public class BLEDriver
             if (discovered != null)
             {
                 devices.add(discovered);
+                delegate.discoveredLamp(discovered.getName());
             }
         }
     }
