@@ -41,6 +41,7 @@ public class BLEDriver
 
     public BLEDriver(Activity activity)
     {
+        //Everything breaks if you don't have this.
         int permissionCheck = ContextCompat.checkSelfPermission(activity, android.Manifest.permission.ACCESS_FINE_LOCATION);
         if (permissionCheck != PackageManager.PERMISSION_GRANTED)
         {
@@ -55,8 +56,8 @@ public class BLEDriver
         ScanFilter serviceFilter = new ScanFilter.Builder().setServiceUuid(serviceId).build();
         List<ScanFilter> filters = new ArrayList<ScanFilter>();
         filters.add(serviceFilter);
-        scanner.startScan(new BrowserStartCallBack(delegate));
-        //scanner.startScan(filters, new ScanSettings.Builder().build(), new BrowserStartCallBack(delegate));
+        //scanner.startScan(new BrowserStartCallBack(delegate));
+        scanner.startScan(filters, new ScanSettings.Builder().build(), new BrowserStartCallBack(delegate));
     }
 
     public void stopBrowsing()
@@ -97,10 +98,12 @@ public class BLEDriver
         {
             BluetoothDevice discovered = result.getDevice();
             Log.d("BLEDriver","Found Device");
-            if (discovered != null)
-            {
+            if (discovered != null) {
                 devices.add(discovered);
-                delegate.discoveredLamp(discovered.getName());
+                if (discovered.getName() != null)
+                {
+                    delegate.discoveredLamp(discovered.getName());
+                }
             }
         }
     }
