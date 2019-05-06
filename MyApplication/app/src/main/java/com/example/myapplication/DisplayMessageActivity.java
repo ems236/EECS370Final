@@ -19,7 +19,17 @@ import java.util.List;
 public class DisplayMessageActivity extends AppCompatActivity implements LampDiscoveryDelegate {
 
     public void discoveredLamp(String deviceName){
-        //do something here
+        if (bleDevices.contains(deviceName)) return;
+        if (deviceName == null) return;
+        if (bleDevices.contains("Not Connected")) {
+            bleDevices.remove("Not Connected");
+        }
+        Log.d ("discovered", deviceName);
+        // add device to spinner (dropdown list)
+        bleDevices.add(deviceName);
+        ArrayAdapter<String> spinnerArrayAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, bleDevices);
+        spinnerArrayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item); // The drop down view
+        blueToothDeviceSpinner.setAdapter(spinnerArrayAdapter);
     }
 
     private  String CONNECTION_TYPE = "";
@@ -29,16 +39,18 @@ public class DisplayMessageActivity extends AppCompatActivity implements LampDis
     private EditText editNetworkDeviceIdEditText;
 
     private List<String> bleDevices;
-    private BLEDriver ble = BLEDriver.instance;
-    Spinner blueToothDeviceSpinner;
+    private BLEDriver ble;// = BLEDriver.instance;
+    private Spinner blueToothDeviceSpinner;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         bleDevices = new ArrayList<String>();
-        //ble.startBrowsing();
-        bleDevices.add("WELF");
-        bleDevices.add("Ellis");
+        bleDevices.add("Not Connected");
+        ble = new BLEDriver(this);
+        ble.startBrowsing(this);
+        //bleDevices.add("WELF");
+        //bleDevices.add("Ellis");
 
         setContentView(R.layout.activity_display_message);
 
@@ -59,66 +71,24 @@ public class DisplayMessageActivity extends AppCompatActivity implements LampDis
 //        TextView t = findViewById(R.id.text);
         textViewMessage.setText("Select a LAMPI using either the bluetooth device dropdown list or the network device edit box.\nThen click the appropriate button to select.");
 
-        Log.d ("onCreate display msg", "ran");
-
-// Array of choices
-        String colors[] = {"Red","Blue","White","Yellow","Black", "Green","Purple","Orange","Grey",
-                "Afghanistan", "Albania", "Algeria", "American Samoa", "Andorra", "Angola", "Anguilla",
-                "Antarctica", "Antigua and Barbuda", "Argentina", "Armenia", "Aruba", "Australia", "Austria", "Azerbaijan", "Bahamas",
-                "Bahrain", "Bangladesh", "Barbados", "Belarus", "Belgium", "Belize", "Benin", "Bermuda", "Bhutan", "Bolivia",
-                "Bosnia and Herzegowina", "Botswana", "Bouvet Island", "Brazil", "British Indian Ocean Territory", "Brunei Darussalam",
-                "Bulgaria", "Burkina Faso", "Burundi", "Cambodia", "Cameroon", "Canada", "Cape Verde", "Cayman Islands",
-                "Central African Republic", "Chad", "Chile", "China", "Christmas Island", "Cocos (Keeling) Islands", "Colombia",
-                "Comoros", "Congo", "Congo, the Democratic Republic of the", "Cook Islands", "Costa Rica", "Cote d'Ivoire",
-                "Croatia (Hrvatska)", "Cuba", "Cyprus", "Czech Republic", "Denmark", "Djibouti", "Dominica", "Dominican Republic",
-                "East Timor", "Ecuador", "Egypt", "El Salvador", "Equatorial Guinea", "Eritrea", "Estonia", "Ethiopia",
-                "Falkland Islands (Malvinas)", "Faroe Islands", "Fiji", "Finland", "France", "France Metropolitan", "French Guiana",
-                "French Polynesia", "French Southern Territories", "Gabon", "Gambia", "Georgia", "Germany", "Ghana", "Gibraltar",
-                "Greece", "Greenland", "Grenada", "Guadeloupe", "Guam", "Guatemala", "Guinea", "Guinea-Bissau", "Guyana", "Haiti",
-                "Heard and Mc Donald Islands", "Holy See (Vatican City State)", "Honduras", "Hong Kong", "Hungary", "Iceland", "India",
-                "Indonesia", "Iran (Islamic Republic of)", "Iraq", "Ireland", "Israel", "Italy", "Jamaica", "Japan", "Jordan",
-                "Kazakhstan", "Kenya", "Kiribati", "Korea, Democratic People's Republic of", "Korea, Republic of", "Kuwait",
-                "Kyrgyzstan", "Lao, People's Democratic Republic", "Latvia", "Lebanon", "Lesotho", "Liberia", "Libyan Arab Jamahiriya",
-                "Liechtenstein", "Lithuania", "Luxembourg", "Macau", "Macedonia, The Former Yugoslav Republic of", "Madagascar",
-                "Malawi", "Malaysia", "Maldives", "Mali", "Malta", "Marshall Islands", "Martinique", "Mauritania", "Mauritius",
-                "Mayotte", "Mexico", "Micronesia, Federated States of", "Moldova, Republic of", "Monaco", "Mongolia", "Montserrat",
-                "Morocco", "Mozambique", "Myanmar", "Namibia", "Nauru", "Nepal", "Netherlands", "Netherlands Antilles",
-                "New Caledonia", "New Zealand", "Nicaragua", "Niger", "Nigeria", "Niue", "Norfolk Island", "Northern Mariana Islands",
-                "Norway", "Oman", "Pakistan", "Palau", "Panama", "Papua New Guinea", "Paraguay", "Peru", "Philippines", "Pitcairn",
-                "Poland", "Portugal", "Puerto Rico", "Qatar", "Reunion", "Romania", "Russian Federation", "Rwanda",
-                "Saint Kitts and Nevis", "Saint Lucia", "Saint Vincent and the Grenadines", "Samoa", "San Marino",
-                "Sao Tome and Principe", "Saudi Arabia", "Senegal", "Seychelles", "Sierra Leone", "Singapore",
-                "Slovakia (Slovak Republic)", "Slovenia", "Solomon Islands", "Somalia", "South Africa",
-                "South Georgia and the South Sandwich Islands", "Spain", "Sri Lanka", "St. Helena", "St. Pierre and Miquelon",
-                "Sudan", "Suriname", "Svalbard and Jan Mayen Islands", "Swaziland", "Sweden", "Switzerland", "Syrian Arab Republic",
-                "Taiwan, Province of China", "Tajikistan", "Tanzania, United Republic of", "Thailand", "Togo", "Tokelau", "Tonga",
-                "Trinidad and Tobago", "Tunisia", "Türkiye", "Turkmenistan", "Turks and Caicos Islands", "Tuvalu", "Uganda", "Ukraine",
-                "United Arab Emirates", "United Kingdom", "United States", "United States Minor Outlying Islands", "Uruguay",
-                "Uzbekistan", "Vanuatu", "Venezuela", "Vietnam", "Virgin Islands (British)", "Virgin Islands (U.S.)",
-                "Wallis and Futuna Islands", "Western Sahara", "Yemen", "Yugoslavia", "Zambia", "Zimbabwe"
-        };
-
-// Selection of the spinner
+        // Selection of the spinner
         blueToothDeviceSpinner = (Spinner) findViewById(R.id.spinner);
 
-        blueToothDeviceSpinner.post(new Runnable() {
-            @Override
-            public void run() {
+//        blueToothDeviceSpinner.post(new Runnable() {
+//            @Override
+//            public void run() {
+//
+//        //        ArrayAdapter<String> spinnerArrayAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, colors);
+//        //        spinnerArrayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item); // The drop down view
+//        //        blueToothDeviceSpinner.setAdapter(spinnerArrayAdapter);
+//                return;
+//            }
+//        });
 
-        //        ArrayAdapter<String> spinnerArrayAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, colors);
-        //        spinnerArrayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item); // The drop down view
-        //        blueToothDeviceSpinner.setAdapter(spinnerArrayAdapter);
-                return;
-            }
-        });
-
-
-
-// Application of the Array to the Spinner
-        ArrayAdapter<String> spinnerArrayAdapter = new ArrayAdapter<String>(this,   android.R.layout.simple_spinner_item, bleDevices);
-        spinnerArrayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item); // The drop down view
+        // Application of the List to the Spinner
+        ArrayAdapter<String> spinnerArrayAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, bleDevices);
+        spinnerArrayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         blueToothDeviceSpinner.setAdapter(spinnerArrayAdapter);
-        // Apply the adapter to the spinner
 
         editNetworkDeviceIdEditText = (EditText) findViewById(R.id.editNetworkDeviceId);
         editNetworkDeviceIdEditText.setText("Enter Device Id");
@@ -134,11 +104,17 @@ public class DisplayMessageActivity extends AppCompatActivity implements LampDis
             //@Override
             public void onClick(View view) {
                 Intent intent = new Intent();
-                //Spinner spinner = (Spinner) findViewById(R.id.spinner);
-
+                String deviceName = blueToothDeviceSpinner.getSelectedItem().toString();
                 intent.putExtra("deviceId", blueToothDeviceSpinner.getSelectedItem().toString());
                 intent.putExtra("connectionType", "BlueTooth");
                 setResult(RESULT_OK, intent);
+                if (deviceName.contains(":")) {
+                    // Bluetooth device selected
+                    String mac = deviceName.split(" ")[1].replace("(", "").replace(")", "");
+                } else {
+                    // no device
+
+                }
                 finish();
             }
         });
