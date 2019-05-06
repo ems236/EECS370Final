@@ -1,12 +1,37 @@
 package com.example.myapplication;
+import android.bluetooth.le.BluetoothLeScanner;
+import java.util.*;
+
+import android.bluetooth.le.ScanCallback;
+import android.bluetooth.le.ScanFilter;
+import android.bluetooth.le.ScanResult;
 import android.content.Context;
-import android.bluetooth.BluetoothAdapter;
-import android.bluetooth.BluetoothManager;
+import android.bluetooth.*;
+import android.bluetooth.le.ScanSettings;
+import android.os.ParcelUuid;
 
 public class BLEDriver
 {
     public static BLEDriver instance = new BLEDriver();
-    private BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+    private BluetoothAdapter adaptor = BluetoothAdapter.getDefaultAdapter();
+    private BluetoothLeScanner scanner = adaptor.getBluetoothLeScanner();
+
+    private final String serviceUUID = "0001A7D3-D8A4-4FEA-8174-1736E808C066";
+    private final String powerUUID = "0004A7D3-D8A4-4FEA-8174-1736E808C066";
+    private final String hsvUUID = "0002A7D3-D8A4-4FEA-8174-1736E808C066";
+    private final String brightnessUUID = "0003A7D3-D8A4-4FEA-8174-1736E808C066";
+
+
+    private List<BluetoothDevice> services = new ArrayList<BluetoothDevice>();
+    public List<String> deviceNames()
+    {
+        List<String> names = new ArrayList<String>();
+        for(BluetoothDevice device : services)
+        {
+            names.add(device.getName());
+        }
+        return names;
+    }
 
     private BLEDriver()
     {
@@ -14,6 +39,53 @@ public class BLEDriver
 
     public void startBrowsing()
     {
-
+        services = new ArrayList<BluetoothDevice>();
+        ParcelUuid serviceId = new ParcelUuid(UUID.fromString(serviceUUID));
+        ScanFilter serviceFilter = new ScanFilter.Builder().setServiceUuid(serviceId).build();
+        List<ScanFilter> filters = new ArrayList<ScanFilter>();
+        filters.add(serviceFilter);
+        scanner.startScan(filters, new ScanSettings.Builder().build(), new BrowserStartCallBack());
     }
+
+    public void connect(String deviceName)
+    {
+        BluetoothDevice device = matchDeviceStringName(deviceName);
+        stopBrowsing();
+    }
+
+    public void stopBrowsing()
+    {
+        scanner.stopScan(new BrowserStopCallBack());
+    }
+
+    private BluetoothDevice matchDeviceStringName(String name)
+    {
+        for(BluetoothDevice device : services)
+        {
+            if(device.getName().equals(name))
+            {
+                return device;
+            }
+        }
+        return null;
+    }
+
+    class BrowserStartCallBack extends ScanCallback
+    {
+        public void onScanResult (int callbackType,
+                                  ScanResult result)
+        {
+            BluetoothDevice discovered = result.getDevice();
+            if (discovered != null)
+            {
+                services.add(discovered);
+            }
+        }
+    }
+    class BrowserStopCallBack extends ScanCallback
+    {
+    }
+
 }
+
+
