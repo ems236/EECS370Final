@@ -142,7 +142,7 @@ public class MainActivity extends AppCompatActivity {
 
                 // update the display
                 seekBarChange();
-                setDeviceStatus(!deviceIdTextView.getText().equals("Not Connected"));
+                //setDeviceStatus(!deviceIdTextView.getText().equals("Not Connected"));
 
                 return;
             }

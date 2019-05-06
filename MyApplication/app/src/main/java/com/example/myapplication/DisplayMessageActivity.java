@@ -11,18 +11,35 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.util.Log;
 
-public class DisplayMessageActivity extends AppCompatActivity {
+import java.util.ArrayList;
+import java.util.List;
+
+public class DisplayMessageActivity extends AppCompatActivity implements LampDiscoveryDelegate {
+
+    public void discoveredLamp(String deviceName){
+        //do something here
+    }
+
     private  String CONNECTION_TYPE = "";
     private  String DEVICE_ID = "";
 
     private TextView textViewMessage;
     private EditText editNetworkDeviceIdEditText;
 
+    private List<String> bleDevices;
+    private BLEDriver ble = BLEDriver.instance;
     Spinner blueToothDeviceSpinner;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        bleDevices = new ArrayList<String>();
+        //ble.startBrowsing();
+        bleDevices.add("WELF");
+        bleDevices.add("Ellis");
+
         setContentView(R.layout.activity_display_message);
 
         // Get the Intent that started this activity and extract the string
@@ -42,7 +59,7 @@ public class DisplayMessageActivity extends AppCompatActivity {
 //        TextView t = findViewById(R.id.text);
         textViewMessage.setText("Select a LAMPI using either the bluetooth device dropdown list or the network device edit box.\nThen click the appropriate button to select.");
 
-
+        Log.d ("onCreate display msg", "ran");
 
 // Array of choices
         String colors[] = {"Red","Blue","White","Yellow","Black", "Green","Purple","Orange","Grey",
@@ -84,8 +101,21 @@ public class DisplayMessageActivity extends AppCompatActivity {
 // Selection of the spinner
         blueToothDeviceSpinner = (Spinner) findViewById(R.id.spinner);
 
+        blueToothDeviceSpinner.post(new Runnable() {
+            @Override
+            public void run() {
+
+        //        ArrayAdapter<String> spinnerArrayAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, colors);
+        //        spinnerArrayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item); // The drop down view
+        //        blueToothDeviceSpinner.setAdapter(spinnerArrayAdapter);
+                return;
+            }
+        });
+
+
+
 // Application of the Array to the Spinner
-        ArrayAdapter<String> spinnerArrayAdapter = new ArrayAdapter<String>(this,   android.R.layout.simple_spinner_item, colors);
+        ArrayAdapter<String> spinnerArrayAdapter = new ArrayAdapter<String>(this,   android.R.layout.simple_spinner_item, bleDevices);
         spinnerArrayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item); // The drop down view
         blueToothDeviceSpinner.setAdapter(spinnerArrayAdapter);
         // Apply the adapter to the spinner
