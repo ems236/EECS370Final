@@ -56,18 +56,19 @@ public class BLEDriver
         scanner.stopScan(new BrowserStopCallBack());
     }
 
-    public void connect(String deviceName, Context context)
+    public void connect(String mac, Context context)
     {
         stopBrowsing();
-        BluetoothDevice device = matchDeviceStringName(deviceName);
+        BluetoothDevice device = matchDeviceMac(mac);
         BluetoothGatt gatt = device.connectGatt(context, true, new LampiCallBack());
+        currentDevice = device;
     }
 
-    private BluetoothDevice matchDeviceStringName(String name)
+    private BluetoothDevice matchDeviceMac(String mac)
     {
         for(BluetoothDevice device : devices)
         {
-            if(device.getName().equals(name))
+            if(device.getAddress().equals(mac))
             {
                 return device;
             }
@@ -119,12 +120,39 @@ public class BLEDriver
 
     class LampiCallBack extends BluetoothGattCallback
     {
+        private BluetoothGattCharacteristic power;
+        private BluetoothGattCharacteristic hsv;
+        private BluetoothGattCharacteristic brightness;
+
         public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState)
         {
             if(status == BluetoothProfile.STATE_CONNECTED)
             {
                 gatt.discoverServices();
             }
+        }
+
+        public void onServicesDiscovered(BluetoothGatt gatt, int status)
+        {
+            BluetoothGattService service = gatt.getService(UUID.fromString(serviceUUID));
+            if(service != null)
+            {
+                power = service.getCharacteristic(UUID.fromString(powerUUID));
+                hsv = service.getCharacteristic(UUID.fromString(hsvUUID));
+                brightness = service.getCharacteristic(UUID.fromString(brightnessUUID));
+
+                gatt.setCharacteristicNotification(power, true);
+                gatt.setCharacteristicNotification(hsv, true);
+                gatt.setCharacteristicNotification(brightness, true);
+
+                //Set delegate values
+            }
+        }
+
+        public void onCharacteristicChanged (BluetoothGatt gatt,
+                                             BluetoothGattCharacteristic characteristic)
+        {
+            characteristic.getValue();
         }
     }
 
