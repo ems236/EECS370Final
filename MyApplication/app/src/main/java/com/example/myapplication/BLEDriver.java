@@ -1,4 +1,5 @@
 package com.example.myapplication;
+import android.app.Activity;
 import android.bluetooth.le.BluetoothLeScanner;
 import java.util.*;
 
@@ -8,13 +9,15 @@ import android.bluetooth.le.ScanResult;
 import android.content.Context;
 import android.bluetooth.*;
 import android.bluetooth.le.ScanSettings;
+import android.content.pm.PackageManager;
 import android.os.ParcelUuid;
 
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.*;
 import android.util.Log;
 
 public class BLEDriver
 {
-    public static BLEDriver instance = new BLEDriver();
     private BluetoothAdapter adaptor = BluetoothAdapter.getDefaultAdapter();
     private BluetoothLeScanner scanner = adaptor.getBluetoothLeScanner();
 
@@ -36,8 +39,13 @@ public class BLEDriver
         return names;
     }
 
-    private BLEDriver()
+    public BLEDriver(Activity activity)
     {
+        int permissionCheck = ContextCompat.checkSelfPermission(activity, android.Manifest.permission.ACCESS_FINE_LOCATION);
+        if (permissionCheck != PackageManager.PERMISSION_GRANTED)
+        {
+            ActivityCompat.requestPermissions(activity, new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION}, 0);
+        }
     }
 
     public void startBrowsing(LampDiscoveryDelegate delegate)
@@ -83,10 +91,12 @@ public class BLEDriver
         {
             this.delegate = delegate;
         }
+
         public void onScanResult (int callbackType,
                                   ScanResult result)
         {
             BluetoothDevice discovered = result.getDevice();
+            Log.d("BLEDriver","Found Device");
             if (discovered != null)
             {
                 devices.add(discovered);
