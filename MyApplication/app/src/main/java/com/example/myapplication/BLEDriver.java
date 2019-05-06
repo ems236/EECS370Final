@@ -30,16 +30,6 @@ public class BLEDriver
 
     private List<BluetoothDevice> devices = new ArrayList<BluetoothDevice>();
 
-    public List<String> deviceNames()
-    {
-        List<String> names = new ArrayList<String>();
-        for(BluetoothDevice device : devices)
-        {
-            names.add(device.getName() + " (" + device.getAddress() + ")");
-        }
-        return names;
-    }
-
     public BLEDriver(Activity activity)
     {
         //Everything breaks if you don't have this.
@@ -71,7 +61,6 @@ public class BLEDriver
         stopBrowsing();
         BluetoothDevice device = matchDeviceStringName(deviceName);
         BluetoothGatt gatt = device.connectGatt(context, true, new LampiCallBack());
-        gatt.discoverServices();
     }
 
     private BluetoothDevice matchDeviceStringName(String name)
@@ -118,11 +107,12 @@ public class BLEDriver
                 //discovered.
                 if (discovered.getName() != null)
                 {
-                    delegate.discoveredLamp(discovered.getName());
+                    delegate.discoveredLamp(discovered.getName() + " (" + discovered.getAddress() + ")");
                 }
             }
         }
     }
+
     class BrowserStopCallBack extends ScanCallback
     {
     }
