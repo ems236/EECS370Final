@@ -47,7 +47,8 @@ public class BLEDriver
         ScanFilter serviceFilter = new ScanFilter.Builder().setServiceUuid(serviceId).build();
         List<ScanFilter> filters = new ArrayList<ScanFilter>();
         filters.add(serviceFilter);
-        scanner.startScan(filters, new ScanSettings.Builder().build(), new BrowserStartCallBack(delegate));
+        scanner.startScan(new BrowserStartCallBack(delegate));
+        //scanner.startScan(filters, new ScanSettings.Builder().build(), new BrowserStartCallBack(delegate));
     }
 
     public void stopBrowsing()
@@ -60,7 +61,7 @@ public class BLEDriver
         stopBrowsing();
         BluetoothDevice device = matchDeviceStringName(deviceName);
         BluetoothGatt gatt = device.connectGatt(context, true, new LampiCallBack());
-        //gatt.
+        gatt.discoverServices();
     }
 
     private BluetoothDevice matchDeviceStringName(String name)
@@ -99,7 +100,13 @@ public class BLEDriver
 
     class LampiCallBack extends BluetoothGattCallback
     {
-
+        public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState)
+        {
+            if(status == BluetoothProfile.STATE_CONNECTED)
+            {
+                gatt.discoverServices();
+            }
+        }
     }
 
 }
