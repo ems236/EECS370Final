@@ -92,20 +92,24 @@ public class MosquittoDriver
                 String jsonString = message.toString();
                 JsonElement parsed = new JsonParser().parse(jsonString);
                 JsonObject newState = parsed.getAsJsonObject();
-                JsonObject color = newState.getAsJsonObject("color");
-                JsonObject hue = color.getAsJsonObject("h");
-                JsonObject sat = color.getAsJsonObject("s");
-                double h = hue.getAsDouble();
-                double s = sat.getAsDouble();
 
-                JsonObject brightness = newState.getAsJsonObject("brightness");
-                double b = brightness.getAsDouble();
+                if(!newState.getAsJsonObject("client").getAsString().equals(clientName)) {
 
-                JsonObject on = newState.getAsJsonObject("on");
-                boolean isOn = on.getAsBoolean();
+                    JsonObject color = newState.getAsJsonObject("color");
+                    JsonObject hue = color.getAsJsonObject("h");
+                    JsonObject sat = color.getAsJsonObject("s");
+                    double h = hue.getAsDouble();
+                    double s = sat.getAsDouble();
 
-                if (delegate != null) {
-                    delegate.receiveState(isOn, h, s, b);
+                    JsonObject brightness = newState.getAsJsonObject("brightness");
+                    double b = brightness.getAsDouble();
+
+                    JsonObject on = newState.getAsJsonObject("on");
+                    boolean isOn = on.getAsBoolean();
+
+                    if (delegate != null) {
+                        delegate.receiveState(isOn, h, s, b);
+                    }
                 }
             }
             catch (Exception e)
@@ -116,5 +120,5 @@ public class MosquittoDriver
             //{"color": {"h": 0.25, "s": 0.74}, "on": true, "client": "lamp_ui", "brightness": 1.0}
         }
     }
-    
+
 }
