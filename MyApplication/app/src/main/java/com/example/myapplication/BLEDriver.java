@@ -22,11 +22,16 @@ public class BLEDriver
     private BluetoothLeScanner scanner = adaptor.getBluetoothLeScanner();
 
     private final String serviceUUID = "0001A7D3-D8A4-4FEA-8174-1736E808C066";
-    private final String powerUUID = "0004A7D3-D8A4-4FEA-8174-1736E808C066";
-    private final String hsvUUID = "0002A7D3-D8A4-4FEA-8174-1736E808C066";
-    private final String brightnessUUID = "0003A7D3-D8A4-4FEA-8174-1736E808C066";
+    private final UUID powerUUID = UUID.fromString("0004A7D3-D8A4-4FEA-8174-1736E808C066");
+    private final UUID hsvUUID = UUID.fromString("0002A7D3-D8A4-4FEA-8174-1736E808C066");
+    private final UUID brightnessUUID = UUID.fromString("0003A7D3-D8A4-4FEA-8174-1736E808C066");
+
+    private BluetoothGattCharacteristic power;
+    private BluetoothGattCharacteristic hsv;
+    private BluetoothGattCharacteristic brightness;
 
     private BluetoothDevice currentDevice = null;
+    private BluetoothGatt mygatt = null;
 
     private List<BluetoothDevice> devices = new ArrayList<BluetoothDevice>();
 
@@ -42,7 +47,7 @@ public class BLEDriver
 
     public void startBrowsing(LampDiscoveryDelegate delegate)
     {
-        devices = new ArrayList<BluetoothDevice>();
+        disconnect();
         ParcelUuid serviceId = new ParcelUuid(UUID.fromString(serviceUUID));
         ScanFilter serviceFilter = new ScanFilter.Builder().setServiceUuid(serviceId).build();
         List<ScanFilter> filters = new ArrayList<ScanFilter>();
@@ -56,12 +61,22 @@ public class BLEDriver
         scanner.stopScan(new BrowserStopCallBack());
     }
 
-    public void connect(String mac, Context context)
+    public void connect(String mac, Context context, LampiNotifyDelegate delegate)
     {
         stopBrowsing();
         BluetoothDevice device = matchDeviceMac(mac);
-        BluetoothGatt gatt = device.connectGatt(context, true, new LampiCallBack());
         currentDevice = device;
+        device.connectGatt(context, true, new LampiCallBack(delegate));
+    }
+
+    public void disconnect()
+    {
+        mygatt.close();
+        mygatt = null;
+        currentDevice = null;
+        power = null;
+        hsv = null;
+        brightness = null;
     }
 
     private BluetoothDevice matchDeviceMac(String mac)
@@ -86,6 +101,41 @@ public class BLEDriver
             }
         }
         return true;
+    }
+
+    public void writePower(boolean isOn)
+    {
+        if(mygatt != null && power != null)
+        {
+            if(isOn)
+            {
+                power.setValue(new byte[]{0x01});
+            }
+            else
+            {
+                power.setValue(new byte[]{0x00});
+            }
+            mygatt.writeCharacteristic(power);
+        }
+
+    }
+
+    public void writeHSV(byte h, byte s)
+    {
+        if(mygatt != null && hsv != null)
+        {
+            hsv.setValue(new byte[]{h, s, (byte) 0xFF});
+            mygatt.writeCharacteristic(power);
+        }
+    }
+
+    public void writeBrightness(byte brightnessVal)
+    {
+        if(mygatt != null && brightness != null)
+        {
+            brightness.setValue(new byte[]{brightnessVal});
+            mygatt.writeCharacteristic(power);
+        }
     }
 
     class BrowserStartCallBack extends ScanCallback
@@ -120,15 +170,19 @@ public class BLEDriver
 
     class LampiCallBack extends BluetoothGattCallback
     {
-        private BluetoothGattCharacteristic power;
-        private BluetoothGattCharacteristic hsv;
-        private BluetoothGattCharacteristic brightness;
+        private LampiNotifyDelegate delegate;
+
+        public LampiCallBack(LampiNotifyDelegate delegate)
+        {
+            this.delegate = delegate;
+        }
 
         public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState)
         {
             if(status == BluetoothProfile.STATE_CONNECTED)
             {
                 gatt.discoverServices();
+                mygatt = gatt;
             }
         }
 
@@ -137,15 +191,18 @@ public class BLEDriver
             BluetoothGattService service = gatt.getService(UUID.fromString(serviceUUID));
             if(service != null)
             {
-                power = service.getCharacteristic(UUID.fromString(powerUUID));
-                hsv = service.getCharacteristic(UUID.fromString(hsvUUID));
-                brightness = service.getCharacteristic(UUID.fromString(brightnessUUID));
+                power = service.getCharacteristic(powerUUID);
+                hsv = service.getCharacteristic(hsvUUID);
+                brightness = service.getCharacteristic(brightnessUUID);
 
                 gatt.setCharacteristicNotification(power, true);
                 gatt.setCharacteristicNotification(hsv, true);
                 gatt.setCharacteristicNotification(brightness, true);
 
                 //Set delegate values
+                readPower();
+                readhsv();
+                readbrightness();
             }
         }
 
@@ -153,6 +210,47 @@ public class BLEDriver
                                              BluetoothGattCharacteristic characteristic)
         {
             characteristic.getValue();
+            UUID current = characteristic.getUuid();
+
+            if(current.equals(powerUUID))
+            {
+                readPower();
+            }
+
+            if(current.equals(hsvUUID))
+            {
+                readhsv();
+            }
+
+            if(current.equals(brightnessUUID))
+            {
+                readbrightness();
+            }
+        }
+
+        public void readPower()
+        {
+            byte val = power.getValue()[0];
+            if(val == 0x00)
+            {
+                delegate.setPower(false);
+            }
+            else
+            {
+                delegate.setPower(true);
+            }
+        }
+
+        public void readhsv()
+        {
+            byte[] val = hsv.getValue();
+            delegate.setHS(val[0], val[1]);
+        }
+
+        public void readbrightness()
+        {
+            byte[] val = brightness.getValue();
+            delegate.setB(val[0]);
         }
     }
 
