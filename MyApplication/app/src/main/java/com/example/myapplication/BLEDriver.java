@@ -205,8 +205,11 @@ public class BLEDriver
         {
             BluetoothGattService service = gatt.getService(UUID.fromString(serviceUUID));
             Log.d("BLE", "Services discoverred");
-            if(service != null)
+            Log.d("BLE gatt", service.getUuid().toString());
+            if(service.getUuid().equals(UUID.fromString(serviceUUID)))
             {
+                List<BluetoothGattCharacteristic> chars = service.getCharacteristics();
+                Log.d("BLE gatt", "Characteristics: " + chars.size());
                 power = service.getCharacteristic(powerUUID);
                 hsv = service.getCharacteristic(hsvUUID);
                 brightness = service.getCharacteristic(brightnessUUID);
