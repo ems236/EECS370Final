@@ -71,12 +71,15 @@ public class BLEDriver
 
     public void disconnect()
     {
-        mygatt.close();
-        mygatt = null;
-        currentDevice = null;
-        power = null;
-        hsv = null;
-        brightness = null;
+        if(mygatt != null && currentDevice != null)
+        {
+            mygatt.close();
+            mygatt = null;
+            currentDevice = null;
+            power = null;
+            hsv = null;
+            brightness = null;
+        }
     }
 
     private BluetoothDevice matchDeviceMac(String mac)
