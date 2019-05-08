@@ -196,12 +196,14 @@ public class BLEDriver
             {
                 gatt.discoverServices();
                 mygatt = gatt;
+                Log.d("BLE", "Connected");
             }
         }
 
         public void onServicesDiscovered(BluetoothGatt gatt, int status)
         {
             BluetoothGattService service = gatt.getService(UUID.fromString(serviceUUID));
+            Log.d("BLE", "Services discoverred");
             if(service != null)
             {
                 power = service.getCharacteristic(powerUUID);
@@ -211,6 +213,7 @@ public class BLEDriver
                 gatt.setCharacteristicNotification(power, true);
                 gatt.setCharacteristicNotification(hsv, true);
                 gatt.setCharacteristicNotification(brightness, true);
+                Log.d("BLE", "Setting notifications to true");
 
                 //Set delegate values
                 readPower();
@@ -227,16 +230,19 @@ public class BLEDriver
 
             if(current.equals(powerUUID))
             {
+                Log.d("BLE", "Reading Power");
                 readPower();
             }
 
             if(current.equals(hsvUUID))
             {
+                Log.d("BLE", "Reading Color");
                 readhsv();
             }
 
             if(current.equals(brightnessUUID))
             {
+                Log.d("BLE", "Reading Brightness");
                 readbrightness();
             }
         }
