@@ -250,6 +250,8 @@ public class BLEDriver
 
         public void readPower()
         {
+            boolean isNull = power == null;
+            Log.d("BLE", "Power set? " + isNull);
             byte val = power.getValue()[0];
             if(val == 0x00)
             {
