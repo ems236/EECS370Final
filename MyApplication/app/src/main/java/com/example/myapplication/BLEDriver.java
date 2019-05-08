@@ -39,10 +39,13 @@ public class BLEDriver
 
     public static void makeInstance(Activity activity)
     {
-        instance = new BLEDriver(activity);
+        if(instance == null)
+        {
+            instance = new BLEDriver(activity);
+        }
     }
 
-    public BLEDriver(Activity activity)
+    private BLEDriver(Activity activity)
     {
         //Everything breaks if you don't have this.
         int permissionCheck = ContextCompat.checkSelfPermission(activity, android.Manifest.permission.ACCESS_FINE_LOCATION);
