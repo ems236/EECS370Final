@@ -35,6 +35,13 @@ public class BLEDriver
 
     private List<BluetoothDevice> devices = new ArrayList<BluetoothDevice>();
 
+    public static BLEDriver instance;
+
+    public static void makeInstance(Activity activity)
+    {
+        instance = new BLEDriver(activity);
+    }
+
     public BLEDriver(Activity activity)
     {
         //Everything breaks if you don't have this.
