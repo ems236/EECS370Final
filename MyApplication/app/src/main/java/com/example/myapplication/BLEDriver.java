@@ -192,8 +192,8 @@ public class BLEDriver
 
         public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState)
         {
-            Log.d("BLE", "State change " + status);
-            if(status == BluetoothProfile.STATE_CONNECTED)
+            Log.d("BLE", "State change " + newState);
+            if(newState == BluetoothProfile.STATE_CONNECTED)
             {
                 gatt.discoverServices();
                 mygatt = gatt;
