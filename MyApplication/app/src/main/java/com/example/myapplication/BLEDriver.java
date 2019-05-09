@@ -332,6 +332,7 @@ public class BLEDriver
                 {
                     Log.d("BLE", "No notify");
                 }
+                notifyQueue.remove(0);
             }
 
             else
