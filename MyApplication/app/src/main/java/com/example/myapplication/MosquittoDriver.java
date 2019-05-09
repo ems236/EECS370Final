@@ -21,6 +21,7 @@ public class MosquittoDriver
     {
         try
         {
+            Log.d("Mqtt", "Connecting to server");
             client = new MqttAsyncClient("3.89.174.155:50001", MqttAsyncClient.generateClientId());
             MqttConnectOptions opts = new MqttConnectOptions();
             opts.setCleanSession(true);
@@ -35,7 +36,19 @@ public class MosquittoDriver
 
     public void setCurrentDevice(String deviceName)
     {
-        this.device = deviceName;
+        try
+        {
+            Log.d("Mqtt", "Subsribing device");
+            client.subscribe("devices/" + deviceName + "/lamp/changed", 1);
+            client.unsubscribe("devices/" + device + "/lamp/changed");
+            this.device = deviceName;
+
+        }
+        catch (Exception e)
+        {
+            Log.d("Mqtt", "Error Subsribing device");
+            this.device = deviceName;
+        }
     }
 
     public void setDelegate(LampMQTTDelegate delegate)
@@ -45,7 +58,10 @@ public class MosquittoDriver
 
     public void publishState(boolean isOn, double h, double s, double brightness)
     {
-        if(client.isConnected()) {
+        if(client.isConnected())
+        {
+            Log.d("Mqtt", "Publishing state");
+
             JsonObject newState = new JsonObject();
             newState.addProperty("client", clientName);
             newState.addProperty("brightness", brightness);
@@ -56,6 +72,8 @@ public class MosquittoDriver
             newColor.addProperty("s", s);
 
             newState.add("color", newColor);
+
+            Log.d("Mqtt", newState.toString());
 
             MqttMessage stateMsg = new MqttMessage(newState.toString().getBytes());
 
@@ -89,10 +107,12 @@ public class MosquittoDriver
         {
 
             try {
+                Log.d("Mqtt", "Receiving state");
                 String jsonString = message.toString();
                 JsonElement parsed = new JsonParser().parse(jsonString);
                 JsonObject newState = parsed.getAsJsonObject();
 
+                Log.d("Mqtt", "Converted to JSON obj");
                 if(!newState.getAsJsonObject("client").getAsString().equals(clientName)) {
 
                     JsonObject color = newState.getAsJsonObject("color");
@@ -108,6 +128,7 @@ public class MosquittoDriver
                     boolean isOn = on.getAsBoolean();
 
                     if (delegate != null) {
+                        Log.d("Mqtt", "Parsed full json obj");
                         delegate.receiveState(isOn, h, s, b);
                     }
                 }
