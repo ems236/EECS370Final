@@ -192,6 +192,8 @@ public class BLEDriver
 
         public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState)
         {
+            super.onConnectionStateChange(gatt, status, newState);
+
             Log.d("BLE", "State change " + newState);
             if(newState == BluetoothProfile.STATE_CONNECTED)
             {
@@ -203,6 +205,8 @@ public class BLEDriver
 
         public void onServicesDiscovered(BluetoothGatt gatt, int status)
         {
+            super.onServicesDiscovered(gatt, status);
+
             BluetoothGattService service = gatt.getService(UUID.fromString(serviceUUID));
             Log.d("BLE", "Services discoverred");
             Log.d("BLE gatt", service.getUuid().toString());
@@ -214,14 +218,58 @@ public class BLEDriver
                 hsv = service.getCharacteristic(hsvUUID);
                 brightness = service.getCharacteristic(brightnessUUID);
 
+                //gatt.readDescriptor();
                 gatt.setCharacteristicNotification(power, true);
                 gatt.setCharacteristicNotification(hsv, true);
                 gatt.setCharacteristicNotification(brightness, true);
+
+                setNotify(power, gatt);
+                setNotify(hsv, gatt);
+                setNotify(brightness, gatt);
+
                 Log.d("BLE", "Setting notifications to true");
 
                 //Set delegate values
+                gatt.readCharacteristic(power);
+                gatt.readCharacteristic(hsv);
+                gatt.readCharacteristic(brightness);
+                //readPower();
+                //readhsv();
+                //readbrightness();
+            }
+        }
+
+        private void setNotify(BluetoothGattCharacteristic characteristic, BluetoothGatt gatt)
+        {
+            for(BluetoothGattDescriptor desc : characteristic.getDescriptors()) {
+
+                desc.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
+                gatt.writeDescriptor(desc);
+            }
+        }
+
+        public void onCharacteristicRead (BluetoothGatt gatt,
+                                          BluetoothGattCharacteristic characteristic,
+                                          int status)
+        {
+            super.onCharacteristicRead(gatt, characteristic, status);
+
+            UUID current = characteristic.getUuid();
+            if(current.equals(powerUUID))
+            {
+                Log.d("BLE", "Reading Power");
                 readPower();
+            }
+
+            if(current.equals(hsvUUID))
+            {
+                Log.d("BLE", "Reading Color");
                 readhsv();
+            }
+
+            if(current.equals(brightnessUUID))
+            {
+                Log.d("BLE", "Reading Brightness");
                 readbrightness();
             }
         }
@@ -229,6 +277,8 @@ public class BLEDriver
         public void onCharacteristicChanged (BluetoothGatt gatt,
                                              BluetoothGattCharacteristic characteristic)
         {
+            super.onCharacteristicChanged(gatt, characteristic);
+
             characteristic.getValue();
             UUID current = characteristic.getUuid();
 
@@ -254,7 +304,7 @@ public class BLEDriver
         public void readPower()
         {
             boolean isNull = power == null;
-            Log.d("BLE", "Power set? " + isNull);
+            Log.d("BLE", "Power null " + isNull);
             byte val = power.getValue()[0];
             if(val == 0x00)
             {
