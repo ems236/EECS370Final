@@ -385,6 +385,16 @@ public class BLEDriver
             readQueuedChars(gatt);
         }
 
+        public void onDescriptorWrite (BluetoothGatt gatt,
+                                       BluetoothGattDescriptor descriptor,
+                                       int status)
+        {
+            super.onDescriptorWrite(gatt, descriptor, status);
+
+            Log.d("BLE", "Wrote a notify descriptor");
+            setFromNotifyQueue(gatt);
+        }
+
         public void onCharacteristicWrite (BluetoothGatt gatt,
                                                          BluetoothGattCharacteristic characteristic,
                                                          int status)
