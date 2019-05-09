@@ -22,7 +22,7 @@ public class MosquittoDriver
         try
         {
             Log.d("Mqtt", "Connecting to server");
-            client = new MqttAsyncClient("3.89.174.155:50001", MqttAsyncClient.generateClientId());
+            client = new MqttAsyncClient("tcp://3.89.174.155:50001", MqttAsyncClient.generateClientId());
             MqttConnectOptions opts = new MqttConnectOptions();
             opts.setCleanSession(true);
             client.setCallback(new LampiCallback());
