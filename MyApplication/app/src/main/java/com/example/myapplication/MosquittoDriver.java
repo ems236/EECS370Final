@@ -1,5 +1,7 @@
 package com.example.myapplication;
 import org.eclipse.paho.client.mqttv3.*;
+import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
+
 import android.util.Log;
 
 import com.google.gson.*;
@@ -22,7 +24,7 @@ public class MosquittoDriver
         try
         {
             Log.d("Mqtt", "Connecting to server");
-            client = new MqttAsyncClient("tcp://3.89.174.155:50001", MqttAsyncClient.generateClientId());
+            client = new MqttAsyncClient("tcp://3.89.174.155:50001", MqttAsyncClient.generateClientId(), new MemoryPersistence());
             MqttConnectOptions opts = new MqttConnectOptions();
             opts.setCleanSession(true);
             client.setCallback(new LampiCallback());
