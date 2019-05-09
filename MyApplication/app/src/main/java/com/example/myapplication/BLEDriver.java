@@ -70,7 +70,7 @@ public class BLEDriver
     public void stopBrowsing()
     {
         scanner.stopScan(new BrowserStopCallBack());
-        devices = new ArrayList<BluetoothDevice>();
+        //devices = new ArrayList<BluetoothDevice>();
     }
 
     public void connect(String mac, Context context, LampiNotifyDelegate delegate)

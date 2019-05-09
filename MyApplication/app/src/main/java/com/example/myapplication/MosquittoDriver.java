@@ -31,7 +31,12 @@ public class MosquittoDriver
         catch (Exception e)
         {
             Log.d("mqtt", "Conncetion error");
+            //"+me.getReasonCode());e.getReasonCode()
             Log.d("mqtt", e.getMessage() + " ");
+            Log.d("mqtt", e.getLocalizedMessage());
+            Log.d("mqtt", e.getCause().toString());
+
+
         }
     }
 
