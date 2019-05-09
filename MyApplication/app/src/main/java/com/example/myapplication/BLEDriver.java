@@ -32,6 +32,7 @@ public class BLEDriver
 
     private BluetoothDevice currentDevice = null;
     private BluetoothGatt mygatt = null;
+    private LampiCallBack callBack;
 
     private List<BluetoothDevice> devices = new ArrayList<BluetoothDevice>();
 
@@ -76,7 +77,8 @@ public class BLEDriver
         stopBrowsing();
         BluetoothDevice device = matchDeviceMac(mac);
         currentDevice = device;
-        device.connectGatt(context, true, new LampiCallBack(delegate));
+        callBack = new LampiCallBack(delegate);
+        device.connectGatt(context, true, callBack);
     }
 
     public void disconnect()
@@ -120,15 +122,18 @@ public class BLEDriver
     {
         if(mygatt != null && power != null)
         {
+            WriteRequest req = new WriteRequest();
+            req.characteristic = power;
             if(isOn)
             {
-                power.setValue(new byte[]{0x01});
+                req.data = new byte[]{0x01};
+
             }
             else
             {
-                power.setValue(new byte[]{0x00});
+                req.data = new byte[]{0x00};
             }
-            mygatt.writeCharacteristic(power);
+            callBack.writeRequest(req);
         }
 
     }
@@ -137,8 +142,10 @@ public class BLEDriver
     {
         if(mygatt != null && hsv != null)
         {
-            hsv.setValue(new byte[]{h, s, (byte) 0xFF});
-            mygatt.writeCharacteristic(power);
+            WriteRequest req = new WriteRequest();
+            req.characteristic = hsv;
+            req.data = new byte[]{h, s, (byte) 0xFF};
+            callBack.writeRequest(req);
         }
     }
 
@@ -146,8 +153,10 @@ public class BLEDriver
     {
         if(mygatt != null && brightness != null)
         {
-            brightness.setValue(new byte[]{brightnessVal});
-            mygatt.writeCharacteristic(power);
+            WriteRequest req = new WriteRequest();
+            req.characteristic = brightness;
+            req.data = new byte[]{brightnessVal};
+            callBack.writeRequest(req);
         }
     }
 
@@ -181,11 +190,20 @@ public class BLEDriver
     {
     }
 
+    class WriteRequest
+    {
+        BluetoothGattCharacteristic characteristic;
+        byte[] data;
+    }
+
     class LampiCallBack extends BluetoothGattCallback
     {
         private LampiNotifyDelegate delegate;
 
-        private List<BluetoothGattCharacteristic> queue = new LinkedList<BluetoothGattCharacteristic>();
+        private List<BluetoothGattCharacteristic> readQueue = new LinkedList<BluetoothGattCharacteristic>();
+        private List<WriteRequest> writeQueue = new LinkedList<WriteRequest>();
+
+        private boolean isWriting = false;
 
         public LampiCallBack(LampiNotifyDelegate delegate)
         {
@@ -236,9 +254,9 @@ public class BLEDriver
                 //gatt.readCharacteristic(hsv);
                 //gatt.readCharacteristic(brightness);
 
-                queue.add(power);
-                queue.add(hsv);
-                queue.add(brightness);
+                readQueue.add(power);
+                readQueue.add(hsv);
+                readQueue.add(brightness);
 
                 readQueuedChars(gatt);
                 //readPower();
@@ -249,10 +267,39 @@ public class BLEDriver
 
         private void readQueuedChars(BluetoothGatt gatt)
         {
-            if(queue.size() > 0)
+            if(readQueue.size() > 0)
             {
-                gatt.readCharacteristic(queue.get(0));
-                queue.remove(0);
+                gatt.readCharacteristic(readQueue.get(0));
+                readQueue.remove(0);
+            }
+        }
+
+        public void writeRequest(WriteRequest req)
+        {
+            if(isWriting)
+            {
+                writeQueue.add(req);
+            }
+            else
+            {
+                req.characteristic.setValue(req.data);
+                mygatt.writeCharacteristic(req.characteristic);
+                isWriting = true;
+            }
+        }
+
+        public void writeQueuedChars()
+        {
+            if(writeQueue.size() > 0)
+            {
+                WriteRequest req = writeQueue.get(0);
+                req.characteristic.setValue(req.data);
+                mygatt.writeCharacteristic(req.characteristic);
+                readQueue.remove(0);
+            }
+            else
+            {
+                isWriting = false;
             }
         }
 
@@ -297,6 +344,14 @@ public class BLEDriver
             }
 
             readQueuedChars(gatt);
+        }
+
+        public void onCharacteristicWrite (BluetoothGatt gatt,
+                                                         BluetoothGattCharacteristic characteristic,
+                                                         int status)
+        {
+            super.onCharacteristicWrite(gatt, characteristic, status);
+            writeQueuedChars();
         }
 
         public void onCharacteristicChanged (BluetoothGatt gatt,
