@@ -243,7 +243,7 @@ public class BLEDriver
 
         private void setNotify(BluetoothGattCharacteristic characteristic, BluetoothGatt gatt)
         {
-            BluetoothGattDescriptor desc = characteristic.getDescriptor(UUID.fromString("2902"));
+            BluetoothGattDescriptor desc = characteristic.getDescriptor(UUID.fromString("00002902-0000-1000-8000-00805F9B34FB"));
             if(desc != null)
             {
                 desc.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
