@@ -22,7 +22,7 @@ public class MosquittoDriver
         try
         {
             Log.d("Mqtt", "Connecting to server");
-            client = new MqttAsyncClient("tcp://3.89.174.155:50001", MqttAsyncClient.generateClientId());
+            client = new MqttAsyncClient("tcp://iot.eclipse.org:1883", MqttAsyncClient.generateClientId());
             MqttConnectOptions opts = new MqttConnectOptions();
             opts.setCleanSession(true);
             client.setCallback(new LampiCallback());
@@ -34,7 +34,7 @@ public class MosquittoDriver
             //"+me.getReasonCode());e.getReasonCode()
             Log.d("mqtt", e.getMessage() + " ");
             Log.d("mqtt", e.getLocalizedMessage());
-            Log.d("mqtt", e.getCause().toString());
+            //Log.d("mqtt", e.getCause().toString());
 
 
         }
