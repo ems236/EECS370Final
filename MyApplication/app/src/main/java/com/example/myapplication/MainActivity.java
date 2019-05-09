@@ -39,9 +39,22 @@ import android.widget.ToggleButton;
 
 public class MainActivity extends AppCompatActivity implements LampiNotifyDelegate, LampMQTTDelegate {
 
+    private MosquittoDriver dr = MosquittoDriver.instance;
     @Override
+
     public void receiveState(boolean isOn, double h, double s, double brightness) {
-        setLampValues(h, s, brightness, isOn);
+        final boolean power = isOn;
+        final double hue = h;
+        final double sat = s;
+        final double bri = brightness;
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                setLampValues(hue, sat, bri, power);
+            }
+        });
+
+        //setLampValues(h, s, brightness, isOn);
     }
 
     public void setHS (byte h, byte s) {
@@ -197,7 +210,7 @@ public class MainActivity extends AppCompatActivity implements LampiNotifyDelega
         seekBarHue.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 seekBarChange();
-                if (messageTextView.getText().equals("Netword"))
+                if (messageTextView.getText().equals("Network"))
                 {
                     boolean power = onOffToggle.isChecked();
                     double h = seekBarHue.getProgress() / 100.0;
@@ -222,7 +235,7 @@ public class MainActivity extends AppCompatActivity implements LampiNotifyDelega
         seekBarSat.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 seekBarChange();
-                if (messageTextView.getText().equals("Netword")) {
+                if (messageTextView.getText().equals("Network")) {
                     boolean power = onOffToggle.isChecked();
                     double h = seekBarHue.getProgress() / 100.0;
                     double s = seekBarSat.getProgress() / 100.0;
@@ -247,7 +260,7 @@ public class MainActivity extends AppCompatActivity implements LampiNotifyDelega
         seekBarVal.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 seekBarChange();
-                if (messageTextView.getText().equals("Netword"))
+                if (messageTextView.getText().equals("Network"))
                 {
                     boolean power = onOffToggle.isChecked();
                     double h = seekBarHue.getProgress() / 100.0;
@@ -283,7 +296,7 @@ public class MainActivity extends AppCompatActivity implements LampiNotifyDelega
                 }
                 seekBarChange();
 
-                if (messageTextView.getText().equals("Netword")) {
+                if (messageTextView.getText().equals("Network")) {
                     boolean power = onOffToggle.isChecked();
                     double h = seekBarHue.getProgress() / 100.0;
                     double s = seekBarSat.getProgress() / 100.0;
@@ -321,10 +334,12 @@ public class MainActivity extends AppCompatActivity implements LampiNotifyDelega
     // Update the lamp display (sliders and button)
     public void setLampValues(Double hue, Double sat, Double val, Boolean isOn)
     {
+        Log.d("ison again", isOn+"");
         if (hue != null) { seekBarHue.setProgress((int) Math.round(hue*100.0)); }
         if (sat != null) { seekBarSat.setProgress((int) Math.round(sat*100.0)); }
         if (val != null) { seekBarVal.setProgress((int) Math.round(val*100.0)); }
         if (isOn != null) { onOffToggle.setChecked(isOn); };
+        Log.d("ison 3", onOffToggle.isChecked()+"");
     }
 
 
@@ -398,6 +413,7 @@ public class MainActivity extends AppCompatActivity implements LampiNotifyDelega
                         // Bluetooth device selected
                         String mac = deviceId.split(" ")[1].replace("(", "").replace(")", "");
                         ble.connect(mac, this, this);
+                        MosquittoDriver.instance.setDelegate(null);
                     } else {
                         // no device
                     }

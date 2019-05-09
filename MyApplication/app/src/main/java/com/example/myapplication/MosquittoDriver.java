@@ -158,6 +158,7 @@ public class MosquittoDriver
                     JsonPrimitive on = newState.getAsJsonPrimitive("on");
                     boolean isOn = on.getAsBoolean();
 
+                    Log.d("Mqtt", isOn + "");
                     Log.d("Mqtt", "Got power");
 
                     if (delegate != null) {

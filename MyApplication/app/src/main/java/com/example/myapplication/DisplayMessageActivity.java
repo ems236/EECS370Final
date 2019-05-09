@@ -47,11 +47,8 @@ public class DisplayMessageActivity extends AppCompatActivity implements LampDis
 
         bleDevices = new ArrayList<String>();
         bleDevices.add("Not Connected");
-        //ble = new BLEDriver(this);
         ble.startBrowsing(this);
-        //bleDevices.add("WELF");
-        //bleDevices.add("Ellis");
-
+        bleDevices.addAll( ble.getDevices());
         setContentView(R.layout.activity_display_message);
 
         // Get the Intent that started this activity and extract the string
@@ -92,7 +89,7 @@ public class DisplayMessageActivity extends AppCompatActivity implements LampDis
 
         editNetworkDeviceIdEditText = (EditText) findViewById(R.id.editNetworkDeviceId);
         editNetworkDeviceIdEditText.setText("Enter Device Id");
-        editNetworkDeviceIdEditText.setText("b827eb63a49c");
+        editNetworkDeviceIdEditText.setText("b827eb634a9c");
         if (connectionType.equals("Network")) {
             editNetworkDeviceIdEditText.setText(deviceId);
         } else if (connectionType.equals("BlueTooth")){
