@@ -223,9 +223,9 @@ public class BLEDriver
                 gatt.setCharacteristicNotification(hsv, true);
                 gatt.setCharacteristicNotification(brightness, true);
 
-                setNotify(power, gatt);
-                setNotify(hsv, gatt);
-                setNotify(brightness, gatt);
+                //setNotify(power, gatt);
+                //setNotify(hsv, gatt);
+                //setNotify(brightness, gatt);
 
                 Log.d("BLE", "Setting notifications to true");
 
