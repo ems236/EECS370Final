@@ -39,7 +39,7 @@ public class DisplayMessageActivity extends AppCompatActivity implements LampDis
     private EditText editNetworkDeviceIdEditText;
 
     private List<String> bleDevices;
-    private BLEDriver ble;// = BLEDriver.instance;
+    private BLEDriver ble = BLEDriver.instance;// = BLEDriver.instance;
     private Spinner blueToothDeviceSpinner;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,7 +47,7 @@ public class DisplayMessageActivity extends AppCompatActivity implements LampDis
 
         bleDevices = new ArrayList<String>();
         bleDevices.add("Not Connected");
-        ble = new BLEDriver(this);
+        //ble = new BLEDriver(this);
         ble.startBrowsing(this);
         //bleDevices.add("WELF");
         //bleDevices.add("Ellis");
@@ -92,6 +92,7 @@ public class DisplayMessageActivity extends AppCompatActivity implements LampDis
 
         editNetworkDeviceIdEditText = (EditText) findViewById(R.id.editNetworkDeviceId);
         editNetworkDeviceIdEditText.setText("Enter Device Id");
+        editNetworkDeviceIdEditText.setText("b827eb63a49c");
         if (connectionType.equals("Network")) {
             editNetworkDeviceIdEditText.setText(deviceId);
         } else if (connectionType.equals("BlueTooth")){
@@ -108,13 +109,7 @@ public class DisplayMessageActivity extends AppCompatActivity implements LampDis
                 intent.putExtra("deviceId", blueToothDeviceSpinner.getSelectedItem().toString());
                 intent.putExtra("connectionType", "BlueTooth");
                 setResult(RESULT_OK, intent);
-                if (deviceName.contains(":")) {
-                    // Bluetooth device selected
-                    String mac = deviceName.split(" ")[1].replace("(", "").replace(")", "");
-                } else {
-                    // no device
 
-                }
                 finish();
             }
         });

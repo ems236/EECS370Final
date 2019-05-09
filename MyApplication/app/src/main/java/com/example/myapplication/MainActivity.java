@@ -37,11 +37,48 @@ import android.widget.TextView;
 import android.util.Log;
 import android.widget.ToggleButton;
 
-public class MainActivity extends AppCompatActivity implements LampiNotifyDelegate {
+public class MainActivity extends AppCompatActivity implements LampiNotifyDelegate, LampMQTTDelegate {
 
-    public void setHS (byte h, byte s) {}
-    public void setB (byte b) {}
-    public void setPower (boolean powered) {}
+    @Override
+    public void receiveState(boolean isOn, double h, double s, double brightness) {
+        setLampValues(h, s, brightness, isOn);
+    }
+
+    public void setHS (byte h, byte s) {
+        final int hue = (int) h & 0xFF;
+        final int sat = (int) s & 0xFF;;
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                // Stuff that updates the UI
+                Log.d("setHS", hue+" "+sat);
+                setLampValues(hue/255.0, sat/255.0, null, null);
+            }
+        });
+
+    }
+    public void setB (byte b) {
+        final int bright = (int) b & 0xFF;
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                // Stuff that updates the UI
+                Log.d("setB", bright+"");
+                setLampValues(null, null,  bright/255.0, null);
+            }
+        });
+    }
+    public void setPower (boolean powered) {
+        final boolean on = powered;
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                // Stuff that updates the UI
+                Log.d("setPower", on+"");
+                setLampValues(null, null,  null, on);
+            }
+        });
+    }
 
     //private TextView mTextMessage;
     private TextView deviceIdTextView;
@@ -55,6 +92,7 @@ public class MainActivity extends AppCompatActivity implements LampiNotifyDelega
     private SeekBar seekBarVal;
 
     private LinearLayout colorBar;
+
     protected Drawable getSliderShape(float width, int[] colors ) {
         LinearGradient test;
         test = new LinearGradient(0.f, 0.f, width, 0.0f, colors,
@@ -101,10 +139,15 @@ public class MainActivity extends AppCompatActivity implements LampiNotifyDelega
         //return th;
     }
 
+    private BLEDriver ble;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        BLEDriver.makeInstance(this);
+        ble = BLEDriver.instance;
+
         setContentView(R.layout.activity_main);
 
         deviceIdTextView = (TextView) findViewById(R.id.deviceId);
@@ -154,6 +197,19 @@ public class MainActivity extends AppCompatActivity implements LampiNotifyDelega
         seekBarHue.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 seekBarChange();
+                if (messageTextView.getText().equals("Netword"))
+                {
+                    boolean power = onOffToggle.isChecked();
+                    double h = seekBarHue.getProgress() / 100.0;
+                    double s = seekBarSat.getProgress() / 100.0;
+                    double b = seekBarVal.getProgress() / 100.0;
+                    MosquittoDriver.instance.publishState(power, h, s, b);
+                } else {
+                    byte h = (byte) (seekBarHue.getProgress() * 255 / 100);
+                    byte s = (byte) (seekBarSat.getProgress() * 255 / 100);
+                    Log.d("write h s", h + " " + s);
+                    ble.writeHSV(h, s);
+                }
             }
             public void onStartTrackingTouch(SeekBar seekBar) {
                 // TODO Auto-generated method stub
@@ -166,6 +222,19 @@ public class MainActivity extends AppCompatActivity implements LampiNotifyDelega
         seekBarSat.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 seekBarChange();
+                if (messageTextView.getText().equals("Netword")) {
+                    boolean power = onOffToggle.isChecked();
+                    double h = seekBarHue.getProgress() / 100.0;
+                    double s = seekBarSat.getProgress() / 100.0;
+                    double b = seekBarVal.getProgress() / 100.0;
+                    MosquittoDriver.instance.publishState(power, h, s, b);
+
+                } else {
+                    byte h = (byte) (seekBarHue.getProgress() * 255 / 100);
+                    byte s = (byte) (seekBarSat.getProgress() * 255 / 100);
+                    Log.d("write h s", h + " " + s);
+                    ble.writeHSV(h, s);
+                }
             }
             public void onStartTrackingTouch(SeekBar seekBar) {
                 // TODO Auto-generated method stub
@@ -178,6 +247,20 @@ public class MainActivity extends AppCompatActivity implements LampiNotifyDelega
         seekBarVal.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 seekBarChange();
+                if (messageTextView.getText().equals("Netword"))
+                {
+                    boolean power = onOffToggle.isChecked();
+                    double h = seekBarHue.getProgress() / 100.0;
+                    double s = seekBarSat.getProgress() / 100.0;
+                    double b = seekBarVal.getProgress() / 100.0;
+                    MosquittoDriver.instance.publishState(power, h, s, b);
+
+                } else {
+                    byte b = (byte) (seekBarVal.getProgress() * 255 / 100);
+                    Log.d("write b", b + "");
+
+                    ble.writeBrightness(b);
+                }
             }
             public void onStartTrackingTouch(SeekBar seekBar) {
                 // TODO Auto-generated method stub
@@ -199,9 +282,19 @@ public class MainActivity extends AppCompatActivity implements LampiNotifyDelega
                     onOffToggle.setTextColor(Color.YELLOW);
                 }
                 seekBarChange();
+
+                if (messageTextView.getText().equals("Netword")) {
+                    boolean power = onOffToggle.isChecked();
+                    double h = seekBarHue.getProgress() / 100.0;
+                    double s = seekBarSat.getProgress() / 100.0;
+                    double bright = seekBarVal.getProgress() / 100.0;
+                    MosquittoDriver.instance.publishState(power, h, s, bright);
+                } else {
+                    ble.writePower(b);
+                }
             }
         });
-setLampValues(0.5, 1.0, 0.7, false);
+//setLampValues(0.5, 1.0, 0.7, false);
 
     }
 
@@ -295,6 +388,19 @@ setLampValues(0.5, 1.0, 0.7, false);
                     deviceIdTextView.setText(deviceId);
                     messageTextView.setText(connectionType);
                     setDeviceStatus(!deviceId.equals("Not Connected"));
+
+                    if (connectionType.equals("Network"))
+                    {
+                        MosquittoDriver.instance.setCurrentDevice(deviceId);
+                        MosquittoDriver.instance.setDelegate(this);
+                    }
+                    if (connectionType.equals("BlueTooth") && deviceId.contains(":")) {
+                        // Bluetooth device selected
+                        String mac = deviceId.split(" ")[1].replace("(", "").replace(")", "");
+                        ble.connect(mac, this, this);
+                    } else {
+                        // no device
+                    }
                 }
         }
     }
