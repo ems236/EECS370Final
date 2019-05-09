@@ -53,9 +53,9 @@ public class MosquittoDriver
         try
         {
             Log.d("Mqtt", "Subsribing device");
+            client.unsubscribe("devices/" + device + "/lamp/changed");
             client.subscribe("devices/" + deviceName + "/lamp/changed", 1);
             Log.d("Mqtt", "Subsribed device");
-            client.unsubscribe("devices/" + device + "/lamp/changed");
             Log.d("Mqtt", "Unsubscribed device");
             this.device = deviceName;
 
