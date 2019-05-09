@@ -185,6 +185,8 @@ public class BLEDriver
     {
         private LampiNotifyDelegate delegate;
 
+        private List<BluetoothGattCharacteristic> queue = new LinkedList<BluetoothGattCharacteristic>();
+
         public LampiCallBack(LampiNotifyDelegate delegate)
         {
             this.delegate = delegate;
@@ -231,13 +233,26 @@ public class BLEDriver
 
                 //Set delegate values
                 //gatt.readCharacteristic(power);
-                gatt.readCharacteristic(hsv);
-                gatt.readCharacteristic(brightness);
+                //gatt.readCharacteristic(hsv);
+                //gatt.readCharacteristic(brightness);
 
+                queue.add(power);
+                queue.add(hsv);
+                queue.add(brightness);
 
+                readQueuedChars(gatt);
                 //readPower();
                 //readhsv();
                 //readbrightness();
+            }
+        }
+
+        private void readQueuedChars(BluetoothGatt gatt)
+        {
+            if(queue.size() > 0)
+            {
+                gatt.readCharacteristic(queue.get(0));
+                queue.remove(0);
             }
         }
 
@@ -262,6 +277,7 @@ public class BLEDriver
             super.onCharacteristicRead(gatt, characteristic, status);
             Log.d("BLE", "Reading Characteristic " + characteristic.getUuid().toString());
             UUID current = characteristic.getUuid();
+
             if(current.equals(powerUUID))
             {
                 Log.d("BLE", "Reading Power");
@@ -279,6 +295,8 @@ public class BLEDriver
                 Log.d("BLE", "Reading Brightness");
                 readbrightness();
             }
+
+            readQueuedChars(gatt);
         }
 
         public void onCharacteristicChanged (BluetoothGatt gatt,
