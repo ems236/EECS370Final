@@ -233,6 +233,8 @@ public class BLEDriver
                 gatt.readCharacteristic(power);
                 gatt.readCharacteristic(hsv);
                 gatt.readCharacteristic(brightness);
+
+
                 //readPower();
                 //readhsv();
                 //readbrightness();
@@ -241,10 +243,15 @@ public class BLEDriver
 
         private void setNotify(BluetoothGattCharacteristic characteristic, BluetoothGatt gatt)
         {
-            for(BluetoothGattDescriptor desc : characteristic.getDescriptors()) {
-
+            BluetoothGattDescriptor desc = characteristic.getDescriptor(UUID.fromString("2902"));
+            if(desc != null)
+            {
                 desc.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
                 gatt.writeDescriptor(desc);
+            }
+            else
+            {
+                Log.d("BLE", "No notify");
             }
         }
 
@@ -253,7 +260,7 @@ public class BLEDriver
                                           int status)
         {
             super.onCharacteristicRead(gatt, characteristic, status);
-
+            Log.d("BLE", "Reading Characteristic " + characteristic.getUuid().toString());
             UUID current = characteristic.getUuid();
             if(current.equals(powerUUID))
             {
