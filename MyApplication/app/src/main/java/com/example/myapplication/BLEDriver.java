@@ -175,7 +175,7 @@ public class BLEDriver
                                   ScanResult result)
         {
             BluetoothDevice discovered = result.getDevice();
-            Log.d("BLEDriver","Found Device");
+            //Log.d("BLEDriver","Found Device");
             //result.
             if (discovered != null && isDeviceNew(discovered.getAddress()))
             {
@@ -246,9 +246,9 @@ public class BLEDriver
                 gatt.setCharacteristicNotification(hsv, true);
                 gatt.setCharacteristicNotification(brightness, true);
 
-                //setNotify(power, gatt);
-                //setNotify(hsv, gatt);
-                //setNotify(brightness, gatt);
+                setNotify(power, gatt);
+                setNotify(hsv, gatt);
+                setNotify(brightness, gatt);
 
                 Log.d("BLE", "Setting notifications to true");
 
@@ -313,6 +313,7 @@ public class BLEDriver
             BluetoothGattDescriptor desc = characteristic.getDescriptor(UUID.fromString("00002902-0000-1000-8000-00805F9B34FB"));
             if(desc != null)
             {
+                Log.d("BLEDriver","Setting notify");
                 desc.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
                 gatt.writeDescriptor(desc);
             }
