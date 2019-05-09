@@ -29,6 +29,7 @@ public class MosquittoDriver
             opts.setCleanSession(true);
             client.setCallback(new LampiCallback());
             client.connect(opts);
+            Log.d("Mqtt", "Connected to server");
         }
         catch (MqttException me)
         {
@@ -53,9 +54,16 @@ public class MosquittoDriver
         {
             Log.d("Mqtt", "Subsribing device");
             client.subscribe("devices/" + deviceName + "/lamp/changed", 1);
+            Log.d("Mqtt", "Subsribed device");
             client.unsubscribe("devices/" + device + "/lamp/changed");
+            Log.d("Mqtt", "Unsubscribed device");
             this.device = deviceName;
 
+        }
+        catch (MqttException me)
+        {
+            Log.d("mqtt", me.getReasonCode() + "");
+            Log.d("mqtt", me.getMessage() + "");
         }
         catch (Exception e)
         {
