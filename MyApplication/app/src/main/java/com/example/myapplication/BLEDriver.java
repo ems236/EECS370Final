@@ -286,9 +286,10 @@ public class BLEDriver
             }
             else
             {
+                Log.d("BLE", "Writing Request");
                 req.characteristic.setValue(req.data);
                 mygatt.writeCharacteristic(req.characteristic);
-                isWriting = true;
+                //isWriting = true;
             }
         }
 
