@@ -56,6 +56,16 @@ public class BLEDriver
         }
     }
 
+    public List<String> getDevices()
+    {
+        List<String> list = new ArrayList<String>();
+        for(BluetoothDevice device : devices)
+        {
+            list.add(device.getName() + " (" + device.getAddress() + ")");
+        }
+        return list;
+
+    }
     public void startBrowsing(LampDiscoveryDelegate delegate)
     {
         disconnect();
