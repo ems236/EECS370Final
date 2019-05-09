@@ -219,7 +219,7 @@ public class BLEDriver
                 brightness = service.getCharacteristic(brightnessUUID);
 
                 //gatt.readDescriptor();
-                //gatt.setCharacteristicNotification(power, true);
+                gatt.setCharacteristicNotification(power, true);
                 gatt.setCharacteristicNotification(hsv, true);
                 gatt.setCharacteristicNotification(brightness, true);
 
@@ -230,7 +230,7 @@ public class BLEDriver
                 Log.d("BLE", "Setting notifications to true");
 
                 //Set delegate values
-                gatt.readCharacteristic(power);
+                //gatt.readCharacteristic(power);
                 gatt.readCharacteristic(hsv);
                 gatt.readCharacteristic(brightness);
 
