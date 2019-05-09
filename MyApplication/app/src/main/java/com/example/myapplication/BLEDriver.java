@@ -204,6 +204,8 @@ public class BLEDriver
         private LampiNotifyDelegate delegate;
 
         private List<BluetoothGattCharacteristic> readQueue = new LinkedList<BluetoothGattCharacteristic>();
+        private List<BluetoothGattCharacteristic> notifyQueue = new LinkedList<BluetoothGattCharacteristic>();
+
         private List<WriteRequest> writeQueue = new LinkedList<WriteRequest>();
 
         private boolean isWriting = false;
@@ -242,13 +244,17 @@ public class BLEDriver
                 brightness = service.getCharacteristic(brightnessUUID);
 
                 //gatt.readDescriptor();
+                //notifyQueue.add()
                 gatt.setCharacteristicNotification(power, true);
                 gatt.setCharacteristicNotification(hsv, true);
                 gatt.setCharacteristicNotification(brightness, true);
 
-                setNotify(power, gatt);
-                setNotify(hsv, gatt);
-                setNotify(brightness, gatt);
+                //setNotify(power, gatt);
+                //setNotify(hsv, gatt);
+                //setNotify(brightness, gatt);
+                notifyQueue.add(power);
+                notifyQueue.add(hsv);
+                notifyQueue.add(brightness);
 
                 Log.d("BLE", "Setting notifications to true");
 
@@ -261,7 +267,9 @@ public class BLEDriver
                 readQueue.add(hsv);
                 readQueue.add(brightness);
 
-                readQueuedChars(gatt);
+                //This calls the read queue when it's done.
+                setFromNotifyQueue(gatt);
+                //readQueuedChars(gatt);
                 //readPower();
                 //readhsv();
                 //readbrightness();
@@ -305,6 +313,31 @@ public class BLEDriver
             else
             {
                 isWriting = false;
+            }
+        }
+
+        public void setFromNotifyQueue(BluetoothGatt gatt)
+        {
+            if(notifyQueue.size() > 0)
+            {
+                BluetoothGattCharacteristic characteristic = notifyQueue.get(0);
+                BluetoothGattDescriptor desc = characteristic.getDescriptor(UUID.fromString("00002902-0000-1000-8000-00805F9B34FB"));
+                if(desc != null)
+                {
+                    Log.d("BLEDriver","Setting notify");
+                    desc.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
+                    gatt.writeDescriptor(desc);
+                }
+                else
+                {
+                    Log.d("BLE", "No notify");
+                }
+            }
+
+            else
+            {
+                Log.d("BLE", "Starting to read values");
+                readQueuedChars(gatt);
             }
         }
 
