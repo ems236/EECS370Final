@@ -137,16 +137,23 @@ public class MosquittoDriver
                 if(!newState.getAsJsonObject("client").getAsString().equals(clientName)) {
 
                     JsonObject color = newState.getAsJsonObject("color");
+                    Log.d("Mqtt", "Read color");
                     JsonObject hue = color.getAsJsonObject("h");
+                    Log.d("Mqtt", "read h");
                     JsonObject sat = color.getAsJsonObject("s");
+                    Log.d("Mqtt", "Read s");
                     double h = hue.getAsDouble();
                     double s = sat.getAsDouble();
+                    Log.d("Mqtt", "Converted h/s to doubles " + h + " " + s);
 
                     JsonObject brightness = newState.getAsJsonObject("brightness");
                     double b = brightness.getAsDouble();
+                    Log.d("Mqtt", "Got b " + b);
 
                     JsonObject on = newState.getAsJsonObject("on");
                     boolean isOn = on.getAsBoolean();
+
+                    Log.d("Mqtt", "Got power");
 
                     if (delegate != null) {
                         Log.d("Mqtt", "Parsed full json obj");
