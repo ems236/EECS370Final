@@ -136,6 +136,11 @@ public class MosquittoDriver
                 Log.d("Mqtt", "Converted to JSON obj");
                 if(!newState.getAsJsonObject("client").getAsString().equals(clientName)) {
 
+                    for(String key : newState.keySet())
+                    {
+                        Log.d("keys:", key);
+                    }
+
                     JsonObject color = newState.getAsJsonObject("color");
                     Log.d("Mqtt", "Read color");
                     JsonObject hue = color.getAsJsonObject("h");
@@ -163,6 +168,7 @@ public class MosquittoDriver
             }
             catch (Exception e)
             {
+                Log.d("Json", e.getMessage());
                 Log.d("Json", "parsing error");
             }
 
