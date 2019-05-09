@@ -122,6 +122,7 @@ public class BLEDriver
     {
         if(mygatt != null && power != null)
         {
+            Log.d("BLE", "Writing power");
             WriteRequest req = new WriteRequest();
             req.characteristic = power;
             if(isOn)
@@ -142,6 +143,7 @@ public class BLEDriver
     {
         if(mygatt != null && hsv != null)
         {
+            Log.d("BLE", "Writing hs");
             WriteRequest req = new WriteRequest();
             req.characteristic = hsv;
             req.data = new byte[]{h, s, (byte) 0xFF};
@@ -153,6 +155,7 @@ public class BLEDriver
     {
         if(mygatt != null && brightness != null)
         {
+            Log.d("BLE", "Writing b");
             WriteRequest req = new WriteRequest();
             req.characteristic = brightness;
             req.data = new byte[]{brightnessVal};
@@ -278,6 +281,7 @@ public class BLEDriver
         {
             if(isWriting)
             {
+                Log.d("BLE", "Adding req to queue");
                 writeQueue.add(req);
             }
             else
@@ -351,6 +355,7 @@ public class BLEDriver
                                                          int status)
         {
             super.onCharacteristicWrite(gatt, characteristic, status);
+            Log.d("BLE", "Completed request");
             writeQueuedChars();
         }
 
